@@ -97,6 +97,15 @@ class ATPG {
   /* defined in atpg.cpp */
   void test();
 
+  /* defined in data_compress.cpp */
+  void data_compress();
+  void reset_flist_undetect();
+  void get_pattern_score(const string &vec, int &score);
+  void tdfault_RVE_sim_a_vector(const string &, int &);
+  void tdfault_RVE_sim_a_vector2(const string &, int &);
+  void tdfault_sim_a_vector_for_detect_once(const string &, int &);
+  void tdfault_sim_a_vector2_for_detect_once(const string &, int &);
+
  private:
 
   /* alias declaration */

@@ -1,0 +1,22 @@
+
+#Circuit Summary:
+#---------------
+#number of inputs = 207
+#number of outputs = 108
+#number of gates = 5679
+#number of wires = 5886
+#atpg: cputime for reading in circuit ../sample_circuits/c7552.ckt: 0.0s 0.0s
+#atpg: cputime for levelling circuit ../sample_circuits/c7552.ckt: 0.0s 0.1s
+#atpg: cputime for rearranging gate inputs ../sample_circuits/c7552.ckt: 0.0s 0.1s
+#atpg: cputime for creating dummy nodes ../sample_circuits/c7552.ckt: 0.0s 0.1s
+#atpg: cputime for generating fault list ../sample_circuits/c7552.ckt: 0.0s 0.1s
+-----------------------
+[ Data compress start ]
+---- RVE start -----
+double comfirm vectors size: 288
+origin vectors size: 289
+origin fault coverage: 89.5405%
+after compress vectors size: 247
+after compress coverage: 90.6764%
+compress ratio:1.17004
+-----------------------
