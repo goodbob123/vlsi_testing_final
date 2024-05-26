@@ -8,7 +8,7 @@ void ATPG::data_compress() {
     cerr << "-----------------------" << endl;
     cerr << "[ Data compress start ]" << endl;
     int DC_choice = 1;
-    bool sort_flag = true;
+    bool sort_flag = false;
 
     // print settings
     cerr << "DC_choice: " << DC_choice << endl;
@@ -29,9 +29,15 @@ void ATPG::data_compress() {
     double origin_fault_coverage = (double)total_detect_num / (double)num_of_tdf_fault * 100;
     int origin_detect_num = total_detect_num;
 
-    auto findSize = [](forward_list<ATPG::FAULT *> &list) {
+    auto find_list_size = [](forward_list<ATPG::FAULT *> &list) {
         return distance(list.begin(), list.end());
     };
+
+    // heuristic method (I): if the fault is not be detected in the end.
+    // then it is a redundant fault, we can remove it from flist_undetect.
+    for (auto &f : flist) {
+        f->atpg_detected = (f->detect == true) ? true : false;
+    }
 
     // (0) (optional) sort the fault list by detected faults num
     if (sort_flag) {
@@ -80,6 +86,8 @@ void ATPG::data_compress() {
                 }
                 total_detect_num += current_detect_num;
             }
+
+            // terminate condition
             no_improve = improved ? 0 : no_improve + 1;
             if (no_improve >= 3) {
                 break;
@@ -88,8 +96,6 @@ void ATPG::data_compress() {
         }
     }
 
-    // reset_flist_undetect();
-    // DC_choice = 2;
     if (DC_choice == 2) {
         cerr << "---- RVE start -----" << endl;
         // (2) Redundant Vector Elimination (RVE)
@@ -125,6 +131,7 @@ void ATPG::data_compress() {
             }
         }
     }
+    // for print result
     cerr << "total fault: " << num_of_tdf_fault << endl;
     cerr << "origin vectors size: " << origin_vector_size << endl;
     cerr << "origin fault coverage: " << origin_fault_coverage << "%" << endl;
@@ -133,7 +140,7 @@ void ATPG::data_compress() {
     cerr << "compress ratio:" << (double)origin_vector_size / (double)vectors.size() << endl;
 
     // for check
-    cerr << "---- check correct -----" << endl;
+    cerr << "---- check correctness -----" << endl;
     reset_flist_undetect();
     current_detect_num = 0;
     total_detect_num = 0;
@@ -142,7 +149,11 @@ void ATPG::data_compress() {
         tdfault_sim_a_vector(vectors[i], current_detect_num, is_redundant_fault);
         total_detect_num += current_detect_num;
     }
-    cerr << "check coverage: " << (double)total_detect_num / (double)num_of_tdf_fault * 100 << "%" << endl;
+    if (total_detect_num != origin_detect_num) {
+        cerr << "error: compress fault coverage is WRONG" << endl;
+    }else{
+        cerr << "compress fault coverage is CORRECT (not FC dropping)" << endl;
+    }
 
     cerr << "-----------------------" << endl;
 }
@@ -151,7 +162,8 @@ void ATPG::data_compress() {
 void ATPG::reset_flist_undetect() {
     flist_undetect.clear();
     for (auto &f : flist) {
-        flist_undetect.push_front(f.get());
+        if (f->atpg_detected == true)
+            flist_undetect.push_front(f.get());
     }
     for (auto &f : flist) {
         f->activate = false;

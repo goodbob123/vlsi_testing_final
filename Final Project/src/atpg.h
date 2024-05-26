@@ -336,5 +336,6 @@ class ATPG {
     int to_swlist;             /* index to the sort_wlist[] */
     int fault_no;              /* fault index */
     int detected_time{};         /* for N-detect */
+    bool atpg_detected;        /* flag to indicate if the fault is detected by atpg */
   }; // class FAULT
 };// class ATPG
