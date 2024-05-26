@@ -3,24 +3,26 @@
 
 #include "atpg.h"
 
-// ./atpg -DC -tdfsim ../tdf_patterns/c17.pat ../sample_circuits/c17.ckt
 
 void ATPG::data_compress() {
     cerr << "-----------------------" << endl;
     cerr << "[ Data compress start ]" << endl;
-    // for (auto &v : vectors) {
-    //     cerr << v << endl;
-    // }
     int DC_choice = 1;
+    bool sort_flag = true;
+
+    // print settings
+    cerr << "DC_choice: " << DC_choice << endl;
+    cerr << "sort_flag: " << sort_flag << endl;
+
 
     // Calc the origin fault coverage
     int current_detect_num = 0;
     int total_detect_num = 0;
 
     for (int i = vectors.size() - 1; i >= 0; i--) {
-        tdfault_sim_a_vector(vectors[i], current_detect_num);
+        bool is_redundant_fault = true;
+        tdfault_sim_a_vector(vectors[i], current_detect_num, is_redundant_fault);
         total_detect_num += current_detect_num;
-        // fprintf(stdout, "vector[%d] detects %d faults (%d)\n", i, current_detect_num, total_detect_num);
     }
 
     int origin_vector_size = vectors.size();
@@ -32,27 +34,27 @@ void ATPG::data_compress() {
     };
 
     // (0) (optional) sort the fault list by detected faults num
-    unordered_map<string, int> pattern_score;
-    int max_score = 0;
-    for (auto &vector : vectors) {
-        get_pattern_score(vector, pattern_score[vector]);
-        reset_flist_undetect();
-        max_score = max(max_score, pattern_score[vector]);
-    }
-    cerr << "max score: " << max_score << endl;
-    vector<vector<string>> new_vectors(max_score + 1);
-    for (auto &p : pattern_score) {
-        new_vectors[p.second].push_back(p.first);
-    }
-    vectors.clear();
-    for (int i = 0; i <= max_score; ++i) {
-        for (auto &v : new_vectors[i]) {
-            vectors.push_back(v);
+    if (sort_flag) {
+        cerr << "---- sort fault list -----" << endl;
+        unordered_map<string, int> pattern_score;
+        int max_score = 0;
+        for (auto &vector : vectors) {
+            get_pattern_score(vector, pattern_score[vector]);
+            reset_flist_undetect();
+            max_score = max(max_score, pattern_score[vector]);
+        }
+        cerr << "max score: " << max_score << endl;
+        vector<vector<string>> new_vectors(max_score + 1);
+        for (auto &p : pattern_score) {
+            new_vectors[p.second].push_back(p.first);
+        }
+        vectors.clear();
+        for (int i = 0; i <= max_score; ++i) {
+            for (auto &v : new_vectors[i]) {
+                vectors.push_back(v);
+            }
         }
     }
-
-    cerr << "sort by pattern score" << endl;
-
     // (1) ROFS
     if (DC_choice == 1) {
         int no_improve = 0;
@@ -61,8 +63,7 @@ void ATPG::data_compress() {
         // for multiple times with shuffling vectors
         for (int ite = 0; ite < 100; ++ite) {
             improved = false;
-            cerr << "ROFS round " << ite << endl;
-            cerr << "vectors size: " << vectors.size() << endl;
+            cerr << "ROFS round " << ite << " vectors size: " << vectors.size() << endl;
             reset_flist_undetect();
 
             current_detect_num = 0;
@@ -70,10 +71,9 @@ void ATPG::data_compress() {
 
             /* for every vector */
             for (int i = vectors.size() - 1; i >= 0; i--) {
-                tdfault_sim_a_vector(vectors[i], current_detect_num);
-                if (current_detect_num == 0) {
-                    // todo: for N-det, not only check current_detect_num = 0!!
-                    // need th check the detected time
+                bool is_redundant_fault = true;
+                tdfault_sim_a_vector(vectors[i], current_detect_num, is_redundant_fault);
+                if (is_redundant_fault) {
                     vectors.erase(vectors.begin() + i);
                     improved = true;
                     continue;
@@ -113,7 +113,8 @@ void ATPG::data_compress() {
 
         // (2-2) check the double comfirm vectors, let fault coverage increase
         for (int i = _double_comfirm_vectors.size() - 1; i >= 0; --i) {
-            tdfault_sim_a_vector(_double_comfirm_vectors[i], current_detect_num);
+            bool is_redundant_fault = true;
+            tdfault_sim_a_vector(_double_comfirm_vectors[i], current_detect_num, is_redundant_fault);
             if (current_detect_num == 0) {
                 continue;
             }
@@ -130,6 +131,18 @@ void ATPG::data_compress() {
     cerr << "after compress vectors size: " << vectors.size() << endl;
     cerr << "after compress coverage: " << (double)total_detect_num / (double)num_of_tdf_fault * 100 << "%" << endl;
     cerr << "compress ratio:" << (double)origin_vector_size / (double)vectors.size() << endl;
+
+    // for check
+    cerr << "---- check correct -----" << endl;
+    reset_flist_undetect();
+    current_detect_num = 0;
+    total_detect_num = 0;
+    for (int i = vectors.size() - 1; i >= 0; i--) {
+        bool is_redundant_fault = true;
+        tdfault_sim_a_vector(vectors[i], current_detect_num, is_redundant_fault);
+        total_detect_num += current_detect_num;
+    }
+    cerr << "check coverage: " << (double)total_detect_num / (double)num_of_tdf_fault * 100 << "%" << endl;
 
     cerr << "-----------------------" << endl;
 }
