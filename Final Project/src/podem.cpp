@@ -10,10 +10,19 @@
 #define CONFLICT 2
 
 /* generates a single pattern for a single fault */
-int ATPG::podem(const fptr fault, int &current_backtracks) {
+
+
+int ATPG::podem(const fptr fault, int &current_backtracks, int flag) {
+  //check if V1 is possible
+  if(!backward_imply(sort_wlist[fault->to_swlist], fault->fault_type)){
+    no_test = true;
+    return 0;
+  }
+
   int i, ncktwire, ncktin;
   wptr wpi; // points to the PI currently being assigned
   forward_list<wptr> decision_tree; // design_tree (a LIFO stack)
+  forward_list<wptr> decision_tree_V1; // design_tree (a LIFO stack)
   wptr wfault;
   int attempt_num = 0;  // counts the number of pattern generated so far for the given fault
 
@@ -24,19 +33,39 @@ int ATPG::podem(const fptr fault, int &current_backtracks) {
     sort_wlist[i]->value = U;
   }
   no_of_backtracks = 0;
+  
+  if(flag){
+    cktin[0]->value = pattern[pattern.size()-1];
+    for (i = 1; i < ncktin; i++) 
+      cktin[i]->value = pattern[i-1];
+  }
+  
   find_test = false;
   no_test = false;
+
+  bool backtrack_V1 = false;
+  bool valid_V2 = false;
+  pattern.resize(ncktin+1);
 
   mark_propagate_tree(fault->node);
 
   /* Fig 7 starts here */
   /* set the initial objective, assign the first PI.  Fig 7.P1 */
+  
   switch (set_uniquely_implied_value(fault)) {
     case TRUE: // if a  PI is assigned
       sim();  // Fig 7.3
       wfault = fault_evaluate(fault);
       if (wfault != nullptr) forward_imply(wfault);// propagate fault effect
-      if (check_test()) find_test = true; // if fault effect reaches PO, done. Fig 7.10
+      if (check_test()){
+        valid_V2 = true; // if fault effect reaches PO
+        pattern[ncktin] = cktin[0]->value;
+          for(int i = 0; i < ncktin; i++){
+            if(i != 0) pattern[i-1] = cktin[i]->value;
+            if(i != ncktin-1) cktin[i]->value = cktin[i+1]->value;
+          }
+          cktin[ncktin-1]->value = U;
+      } 
       break;
     case CONFLICT:
       no_test = true; // cannot achieve initial objective, no test
@@ -53,110 +82,192 @@ int ATPG::podem(const fptr fault, int &current_backtracks) {
   while ((no_of_backtracks < backtrack_limit) && !no_test &&
          !(find_test && (attempt_num == total_attempt_num))) {
 
-    /* check if test possible.   Fig. 7.1 */
-    if (wpi = test_possible(fault)) {
-      wpi->set_changed();
-      /* insert a new PI into decision_tree */
-      decision_tree.push_front(wpi);
-    } else { // no test possible using this assignment, backtrack.
+    if(!valid_V2){
+      //find V2
+      if ((!backtrack_V1) && (wpi = test_possible(fault))) {
+        wpi->set_changed();
+        /* insert a new PI into decision_tree */
+        decision_tree.push_front(wpi);
+      } 
+      else { // no test possible using this assignment, backtrack.
+        wpi = nullptr;
+        backtrack_V1 = false;
+        while (!decision_tree.empty() && (wpi == nullptr)) {
+          /* if both 01 already tried, backtrack. Fig.7.7 */
+          if (decision_tree.front()->is_all_assigned()) {
+            decision_tree.front()->remove_all_assigned();  // clear the ALL_ASSIGNED flag
+            decision_tree.front()->value = U; // do not assign 0 or 1
+            decision_tree.front()->set_changed(); // this PI has been changed
+            /* remove this PI in decision tree.  see dashed nodes in Fig 6 */
+            decision_tree.pop_front();
+          }
+            /* else, flip last decision, flag ALL_ASSIGNED. Fig. 7.8 */
+          else {
+            decision_tree.front()->value = decision_tree.front()->value ^ 1; // flip last decision
+            decision_tree.front()->set_changed(); // this PI has been changed
+            decision_tree.front()->set_all_assigned();
+            no_of_backtracks++;
+            wpi = decision_tree.front();
+          }
+        } // while decision tree && ! wpi
+        if (wpi == nullptr) no_test = true; //decision tree empty,  Fig 7.9
+      } // no test possible
 
-      while (!decision_tree.empty() && (wpi == nullptr)) {
-        /* if both 01 already tried, backtrack. Fig.7.7 */
-        if (decision_tree.front()->is_all_assigned()) {
-          decision_tree.front()->remove_all_assigned();  // clear the ALL_ASSIGNED flag
-          decision_tree.front()->value = U; // do not assign 0 or 1
-          decision_tree.front()->set_changed(); // this PI has been changed
-          /* remove this PI in decision tree.  see dashed nodes in Fig 6 */
-          decision_tree.pop_front();
+      if (wpi) {
+        sim();
+        if (wfault = fault_evaluate(fault)) forward_imply(wfault);
+        if (check_test()) {
+          valid_V2 = true;
+          pattern[ncktin] = cktin[0]->value;
+          for(int i = 0; i < ncktin; i++){
+            if(i != 0) pattern[i-1] = cktin[i]->value;
+            if(i != ncktin-1) cktin[i]->value = cktin[i+1]->value;
+          }
+          cktin[ncktin-1]->value = U;
         }
-          /* else, flip last decision, flag ALL_ASSIGNED. Fig. 7.8 */
-        else {
-          decision_tree.front()->value = decision_tree.front()->value ^ 1; // flip last decision
-          decision_tree.front()->set_changed(); // this PI has been changed
-          decision_tree.front()->set_all_assigned();
-          no_of_backtracks++;
-          wpi = decision_tree.front();
+      }
+    }
+    else{
+      //find_V1
+      if (wpi = find_pi_assignment(sort_wlist[fault->to_swlist], fault->fault_type)) {
+        wpi->set_changed();
+        /* insert a new PI into decision_tree */
+        decision_tree_V1.push_front(wpi);
+      } 
+      else { // no test possible using this assignment, backtrack.
+        while (!decision_tree_V1.empty() && (wpi == nullptr)) {
+          /* if both 01 already tried, backtrack. Fig.7.7 */
+          if (decision_tree_V1.front()->is_all_assigned()) {
+            decision_tree_V1.front()->remove_all_assigned();  // clear the ALL_ASSIGNED flag
+            decision_tree_V1.front()->value = U; // do not assign 0 or 1
+            decision_tree_V1.front()->set_changed(); // this PI has been changed
+            /* remove this PI in decision tree.  see dashed nodes in Fig 6 */
+            decision_tree_V1.pop_front();
+          }
+            /* else, flip last decision, flag ALL_ASSIGNED. Fig. 7.8 */
+          else {
+            decision_tree_V1.front()->value = decision_tree_V1.front()->value ^ 1; // flip last decision
+            decision_tree_V1.front()->set_changed(); // this PI has been changed
+            decision_tree_V1.front()->set_all_assigned();
+            no_of_backtracks++;
+            wpi = decision_tree_V1.front();
+          }
+        } // while decision tree && ! wpi
+        if (wpi == nullptr){//can't find V1, backtrack V2
+          valid_V2 = false;
+          backtrack_V1 = true;
+          cktin[0]->value = pattern[ncktin];
+          for(int i = 1; i < ncktin; i++){
+            cktin[i]->value = pattern[i-1];
+          }
+        } 
+      }
+
+      if (wpi) {
+        sim();
+        if (sort_wlist[fault->to_swlist]->value == fault->fault_type) {
+          find_test = true;
+          attempt_num++;
+          for(int i = 0; i < ncktin; i++){
+            pattern[i] = cktin[i]->value;
+          }
         }
-      } // while decision tree && ! wpi
-      if (wpi == nullptr) no_test = true; //decision tree empty,  Fig 7.9
-    } // no test possible
+      }
+    }
 
 /* this again loop is to generate multiple patterns for a single fault 
  * this part is NOT in the original PODEM paper  */
-    again:
-    if (wpi) {
-      sim();
-      if (wfault = fault_evaluate(fault)) forward_imply(wfault);
-      if (check_test()) {
-        find_test = true;
+    //again:
+    // if (wpi) {
+    //   sim();
+    //   if (wfault = fault_evaluate(fault)) forward_imply(wfault);
+    //   if (check_test()) {
+    //     valid_V2 = true;
         /* if multiple patterns per fault, print out every test cube */
-        if (total_attempt_num > 1) {
-          if (attempt_num == 0) {
-            display_fault(fault);
-          }
-          display_io();
-        }
-        attempt_num++; // increase pattern count for this fault
+        // if (total_attempt_num > 1) {
+        //   if (attempt_num == 0) {
+        //     display_fault(fault);
+        //   }
+        //   display_io();
+        // }
+        // attempt_num++; // increase pattern count for this fault
 
-        /* keep trying more PI assignments if we want multiple patterns per fault
-         * this is not in the original PODEM paper*/
-        if (total_attempt_num > attempt_num) {
-          wpi = nullptr;
-          while (!decision_tree.empty() && (wpi == nullptr)) {
-            /* backtrack */
-            if (decision_tree.front()->is_all_assigned()) {
-              decision_tree.front()->remove_all_assigned();
-              decision_tree.front()->value = U;
-              decision_tree.front()->set_changed();
-              decision_tree.pop_front();
-            }
-              /* flip last decision */
-            else {
-              decision_tree.front()->value = decision_tree.front()->value ^ 1;
-              decision_tree.front()->set_changed();
-              decision_tree.front()->set_all_assigned();
-              no_of_backtracks++;
-              wpi = decision_tree.front();
-            }
-          }
-          if (!wpi) no_test = true;
-          goto again;  // if we want multiple patterns per fault
-        } // if total_attempt_num > attempt_num
-      }  // if check_test()
-    } // again
+        // /* keep trying more PI assignments if we want multiple patterns per fault
+        //  * this is not in the original PODEM paper*/
+        // if (total_attempt_num > attempt_num) {
+        //   wpi = nullptr;
+        //   while (!decision_tree.empty() && (wpi == nullptr)) {
+        //     /* backtrack */
+        //     if (decision_tree.front()->is_all_assigned()) {
+        //       decision_tree.front()->remove_all_assigned();
+        //       decision_tree.front()->value = U;
+        //       decision_tree.front()->set_changed();
+        //       decision_tree.pop_front();
+        //     }
+        //       /* flip last decision */
+        //     else {
+        //       decision_tree.front()->value = decision_tree.front()->value ^ 1;
+        //       decision_tree.front()->set_changed();
+        //       decision_tree.front()->set_all_assigned();
+        //       no_of_backtracks++;
+        //       wpi = decision_tree.front();
+        //     }
+        //   }
+        //   if (!wpi) no_test = true;
+        //   goto again;  // if we want multiple patterns per fault
+        // } // if total_attempt_num > attempt_num
+
+    //   }  // if check_test()
+    // } // again
   } // while (three conditions)
 
   /* clear everything */
   for (wptr wptr_ele: decision_tree) {
     wptr_ele->remove_all_assigned();
   }
+  for (wptr wptr_ele: decision_tree_V1) {
+    wptr_ele->remove_all_assigned();
+  }
   decision_tree.clear();
+  decision_tree_V1.clear();
 
-  current_backtracks = no_of_backtracks;
+  if(flag)
+    current_backtracks += no_of_backtracks;
+  else
+    current_backtracks = no_of_backtracks;
   unmark_propagate_tree(fault->node);
 
   if (find_test) {
     /* normally, we want one pattern per fault */
-    if (total_attempt_num == 1) {
+    // if (total_attempt_num == 1) {
+      
+    //   fprintf(stdout, "T\'");
+    //   for (int i = 0; i < pattern.size(); i++) {
+    //     switch (pattern[i]) {
+    //       case 0:
+    //         fprintf(stdout, "0");
+    //         break;
+    //       case 1:
+    //         fprintf(stdout, "1");
+    //         break;
+    //       case U:
+    //         fprintf(stdout, "2");
+    //         break;
+    //       case D:
+    //         fprintf(stdout, "1");
+    //         break;
+    //       case D_bar:
+    //         fprintf(stdout, "0");
+    //         break;
+    //     }
+    //     if(i == (pattern.size() - 2))
+    //       fprintf(stdout, " ");
+    //   }
 
-      for (i = 0; i < ncktin; i++) {
-        switch (cktin[i]->value) {
-          case 0:
-          case 1:
-            break;
-          case D:
-            cktin[i]->value = 1;
-            break;
-          case D_bar:
-            cktin[i]->value = 0;
-            break;
-          case U:
-            cktin[i]->value = rand() & 01;
-            break; // random fill U
-        }
-      }
-      display_io();
-    } else fprintf(stdout, "\n");  // do not random fill when multiple patterns per fault
+    //   fprintf(stdout, "'");
+    //   fprintf(stdout, "\n");
+
+    // } else fprintf(stdout, "\n");  // do not random fill when multiple patterns per fault
     return (TRUE);
   } else if (no_test) {
     /*fprintf(stdout,"redundant fault...\n");*/
@@ -543,7 +654,7 @@ int ATPG::set_uniquely_implied_value(const fptr fault) {
     switch (fault->node->type) {
       case NOT:
       case BUF:
-        return (pi_is_reach);
+        break;
 
         /* assign all side inputs to non-controlling values */
       case AND:

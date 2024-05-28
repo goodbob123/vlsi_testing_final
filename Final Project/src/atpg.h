@@ -96,6 +96,8 @@ class ATPG {
 
   /* defined in atpg.cpp */
   void test();
+  bool redundant_input();
+  void SCOAP();
 
   /* defined in data_compress.cpp */
   void data_compress();
@@ -203,8 +205,9 @@ class ATPG {
   int no_of_backtracks{};  // current number of backtracks
   bool find_test{};        // true when a test pattern is found
   bool no_test{};          // true when it is proven that no test exists for this fault
+  vector<int> pattern;
 
-  int podem(fptr, int &);
+  int podem(fptr, int &, int);
   wptr fault_evaluate(fptr);
   void forward_imply(wptr);
   wptr test_possible(fptr);
@@ -244,6 +247,9 @@ class ATPG {
                                   in the presence of 16 faults. (for pfedfs) */
     int wlist_index;           /* index into the sorted_wlist array */
 
+    int cc[2] = {0, 0};
+    int co = 0;
+    
     //  the following functions control/observe the state of wire
     //  HCY 2020/2/6
     void set_(int type) { flag |= type; }
@@ -279,7 +285,6 @@ class ATPG {
    private:
     int flag = 0;                  /* 32 bit, records state of wire */
     int fault_flag = 0;            /* 32 bit, indicates the fault-injected bit position, for pfedfs */
-
   };// class WIRE
 
   //   this is a schematic for fanout
