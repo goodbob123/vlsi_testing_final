@@ -88,14 +88,23 @@ class ATPG {
   /*defined in tdfsim.cpp*/
   void generate_tdfault_list();
   void transition_delay_fault_simulation(int &);
-  void tdfault_sim_a_vector(const string &, int &);
-  void tdfault_sim_a_vector2(const string &, int &);
+  void tdfault_sim_a_vector(const string &, int &, bool &);
+  void tdfault_sim_a_vector2(const string &, int &, bool &);
   int num_of_tdf_fault{};
   int detected_num{};
   bool get_tdfsim_only() { return tdfsim_only; }
 
   /* defined in atpg.cpp */
   void test();
+
+  /* defined in data_compress.cpp */
+  void data_compress();
+  void reset_flist_undetect();
+  void get_pattern_score(const string &vec, int &score);
+  void tdfault_RVE_sim_a_vector(const string &, int &);
+  void tdfault_RVE_sim_a_vector2(const string &, int &);
+  void tdfault_sim_a_vector_for_detect_once(const string &, int &);
+  void tdfault_sim_a_vector2_for_detect_once(const string &, int &);
 
  private:
 
@@ -327,5 +336,6 @@ class ATPG {
     int to_swlist;             /* index to the sort_wlist[] */
     int fault_no;              /* fault index */
     int detected_time{};         /* for N-detect */
+    bool atpg_detected;        /* flag to indicate if the fault is detected by atpg */
   }; // class FAULT
 };// class ATPG

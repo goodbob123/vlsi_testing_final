@@ -13,7 +13,7 @@ int main(int argc, char *argv[]) {
   string inpFile, vetFile;
   int i, j;
   ATPG atpg; // create an ATPG obj, named atpg
-
+  bool DC_flag = false;
   atpg.timer(stdout, "START");
   atpg.detected_num = 1;
   i = 1;
@@ -35,6 +35,9 @@ int main(int argc, char *argv[]) {
       vetFile = string(argv[i + 1]);
       atpg.set_tdfsim_only(true);
       i += 2;
+    } else if (strcmp(argv[i], "-DC") == 0) {
+      DC_flag = true;
+      i++;
     }
       // for N-detect fault simulation
     else if (strcmp(argv[i], "-ndet") == 0) {
@@ -79,7 +82,10 @@ int main(int argc, char *argv[]) {
   if (!atpg.get_tdfsim_only()) atpg.generate_fault_list(); //init_flist.cpp
   else atpg.generate_tdfault_list();
   atpg.timer(stdout, "for generating fault list");
-
+  if (DC_flag) {
+    atpg.data_compress();
+    exit(EXIT_SUCCESS);
+  }
   atpg.test(); //atpg.cpp
   if (!atpg.get_tdfsim_only())atpg.compute_fault_coverage(); //init_flist.cpp
   atpg.timer(stdout, "for test pattern generation");
