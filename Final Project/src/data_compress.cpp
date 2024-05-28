@@ -26,6 +26,12 @@ void ATPG::data_compress() {
         }
     }
 
+    // cerr << "---- vectors -----" << endl;
+    // cerr << "vectors size: " << vectors.size() << endl;
+    // for (auto vec : vectors) {
+    //     cerr << vec << endl;
+    // }
+
     // print settings
     cerr << "DC_choice: " << DC_choice << endl;
     cerr << "sort_flag: " << sort_flag << endl;

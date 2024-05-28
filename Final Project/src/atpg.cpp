@@ -31,18 +31,8 @@ void ATPG::test() {
 
     /* transition fault sim mode */
     if (tdfsim_only) {
-        transition_delay_fault_simulation(total_detect_num);
-        in_vector_no += vectors.size();
-        display_undetect();
-
-        printf("\n# Result:\n");
-        printf("-----------------------\n");
-        printf("# total transition delay faults: %d\n", num_of_tdf_fault);
-        printf("# total detected faults: %d\n", total_detect_num);
-        printf("# fault coverage: %lf %\n", (double) total_detect_num / (double) num_of_tdf_fault * 100);
         return;
-    }// if fsim only
-
+    }  // if fsim only
 
     /* test generation mode */
     /* Figure 5 in the PODEM paper */
@@ -51,6 +41,7 @@ void ATPG::test() {
     forward_list<ATPG::fptr>::iterator prev;
     SCOAP();
     while (fault_under_test != nullptr) {
+        string vec = "";
         switch (podem(fault_under_test, current_backtracks, 0)) {
             case TRUE:
                 /* form a vector */
@@ -79,31 +70,14 @@ void ATPG::test() {
                         fail_count++;
                     }
                 }
-                
-                fprintf(stdout, "T\'");
+
+                // fprintf(stdout, "T\'");
                 for (int i = 0; i < pattern.size(); i++) {
-                    switch (pattern[i]) {
-                    case 0:
-                        fprintf(stdout, "0");
-                        break;
-                    case 1:
-                        fprintf(stdout, "1");
-                        break;
-                    case U:
-                        fprintf(stdout, "2");
-                        break;
-                    case D:
-                        fprintf(stdout, "1");
-                        break;
-                    case D_bar:
-                        fprintf(stdout, "0");
-                        break;
-                    }
-                    if(i == (pattern.size() - 2))
-                    fprintf(stdout, " ");
+                    vec += itoc(pattern[i]);
                 }
-                fprintf(stdout, "'");
-                fprintf(stdout, "\n");
+                vectors.push_back(vec);
+                // fprintf(stdout, "'");
+                // fprintf(stdout, "\n");
 
                 /*by defect, we want only one pattern per fault */
                 /*run a fault simulation, drop ALL detected faults */
@@ -141,6 +115,18 @@ void ATPG::test() {
         }
         total_no_of_backtracks += current_backtracks; // accumulate number of backtracks
         no_of_calls++;
+    }
+
+    // data_compress();
+    for (int i = 0; i < vectors.size(); i++) {
+        fprintf(stdout, "T\'");
+        for (int j = 0; j < vectors[i].size() - 1; j++) {
+            cout << vectors[i][j];
+        }
+        cout << " ";
+        cout << vectors[i].back();
+        cout << "'";
+        cout << endl;
     }
 
     display_undetect();
@@ -342,7 +328,7 @@ void ATPG::SCOAP() {
         }
     }
 
-    for(int i = 0; i < sort_wlist.size(); i++){
-        cout<<"wire "<<i<<" : "<<sort_wlist[i]->cc[0]<<", "<<sort_wlist[i]->cc[1]<<", "<<sort_wlist[i]->co<<endl;
-    }
+    // for(int i = 0; i < sort_wlist.size(); i++){
+    //     cout<<"wire "<<i<<" : "<<sort_wlist[i]->cc[0]<<", "<<sort_wlist[i]->cc[1]<<", "<<sort_wlist[i]->co<<endl;
+    // }
 }

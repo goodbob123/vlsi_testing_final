@@ -18,7 +18,7 @@ int main(int argc, char *argv[]) {
   atpg.detected_num = 1;
   i = 1;
 
-/* parse the input switches & arguments */
+  /* parse the input switches & arguments */
   while (i < argc) {
     // number of test generation attempts for each fault.  used in podem.cpp
     if (strcmp(argv[i], "-anum") == 0) {
