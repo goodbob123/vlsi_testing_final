@@ -1,3 +1,4 @@
+#include <time.h>
 #include <algorithm>
 #include <unordered_map>
 
@@ -9,6 +10,21 @@ void ATPG::data_compress() {
     cerr << "[ Data compress start ]" << endl;
     int DC_choice = 1;
     bool sort_flag = false;
+    srand(time(NULL));
+
+    // reset redundant fault
+    for (auto &f : flist) {
+        f->detect = false;
+    }
+
+    // todo: fill the X-, random gen
+    for (int i = 0; i < vectors.size(); ++i) {
+        for (int j = 0; j < vectors[i].size(); ++j) {
+            if (vectors[i][j] == '2') {
+                vectors[i][j] = (rand() % (2)) ? '0' : '1';
+            }
+        }
+    }
 
     // print settings
     cerr << "DC_choice: " << DC_choice << endl;
