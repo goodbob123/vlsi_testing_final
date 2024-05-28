@@ -1,6 +1,6 @@
-cd src
-make
-cd ..
+# cd src
+# make
+# cd ..
 
 #rm -rf  podem/* diff* podemx/*
 #2670 7552

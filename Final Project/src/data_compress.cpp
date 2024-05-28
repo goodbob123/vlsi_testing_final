@@ -12,12 +12,18 @@ void ATPG::data_compress() {
     bool sort_flag = false;
     srand(time(NULL));
 
-    // reset redundant fault
+    // reset fault list
     for (auto &f : flist) {
         f->detect = false;
+        f->activate = false;
+        f->detected_time = 0;
+    }
+    flist_undetect.clear();
+    for (auto &f : flist) {
+        flist_undetect.push_front(f.get());
     }
 
-    // todo: fill the X-, random gen
+    // fill the X-, random gen
     for (int i = 0; i < vectors.size(); ++i) {
         for (int j = 0; j < vectors[i].size(); ++j) {
             if (vectors[i][j] == '2') {
@@ -25,12 +31,6 @@ void ATPG::data_compress() {
             }
         }
     }
-
-    // cerr << "---- vectors -----" << endl;
-    // cerr << "vectors size: " << vectors.size() << endl;
-    // for (auto vec : vectors) {
-    //     cerr << vec << endl;
-    // }
 
     // print settings
     cerr << "DC_choice: " << DC_choice << endl;

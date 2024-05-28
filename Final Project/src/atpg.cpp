@@ -117,7 +117,7 @@ void ATPG::test() {
         no_of_calls++;
     }
 
-    // data_compress();
+    data_compress();
     for (int i = 0; i < vectors.size(); i++) {
         fprintf(stdout, "T\'");
         for (int j = 0; j < vectors[i].size() - 1; j++) {

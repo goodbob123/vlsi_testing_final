@@ -81,10 +81,7 @@ int main(int argc, char *argv[]) {
 
   atpg.generate_tdfault_list(); //init_flist.cpp
   atpg.timer(stdout, "for generating fault list");
-  if (DC_flag) {
-    atpg.data_compress();
-    exit(EXIT_SUCCESS);
-  }
+  
   atpg.test(); //atpg.cpp
   //if (!atpg.get_tdfsim_only())atpg.compute_fault_coverage(); //init_flist.cpp
   atpg.timer(stdout, "for test pattern generation");
