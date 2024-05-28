@@ -23,7 +23,7 @@ void ATPG::transition_delay_fault_simulation(int &total_detect_num) {
   int current_detect_num = 0;
 
   /* for every vector */
-  for (i = vectors.size() - 1; i >= 0; i--) {
+  for (i = 0; i <= vectors.size() - 1; i++) {
     tdfault_sim_a_vector(vectors[i], current_detect_num);
     total_detect_num += current_detect_num;
     fprintf(stdout, "vector[%d] detects %d faults (%d)\n", i, current_detect_num, total_detect_num);

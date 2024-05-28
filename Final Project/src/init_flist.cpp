@@ -246,9 +246,9 @@ void ATPG::compute_fault_coverage() {
           num_of_gate_fault);  // uncollapsed gate-level fault
   fprintf(stdout, "#total number of detected faults = %d\n", no_of_detect);
   fprintf(stdout, "#total gate fault coverage = %5.2f%%\n", gate_fault_coverage);  // uncollapsed fault coverage
-  fprintf(stdout, "#number of equivalent gate faults (collapsed) = %d\n", eqv_num_of_gate_fault);
-  fprintf(stdout, "#number of equivalent detected faults = %d\n", eqv_no_of_detect);
-  fprintf(stdout, "#equivalent gate fault coverage = %5.2f%%\n", eqv_gate_fault_coverage);
+  // fprintf(stdout, "#number of equivalent gate faults (collapsed) = %d\n", eqv_num_of_gate_fault);
+  // fprintf(stdout, "#number of equivalent detected faults = %d\n", eqv_no_of_detect);
+  // fprintf(stdout, "#equivalent gate fault coverage = %5.2f%%\n", eqv_gate_fault_coverage);
   fprintf(stdout, "\n");
 }/* end of compute_fault_coverage */
 
@@ -313,7 +313,11 @@ char ATPG::itoc(const int &i) {
     case 1:
       return '1';
     case 2:
-      return 'U';
+      return '2';
+    case 3:
+      return '1';
+    case 4:
+      return '0';
     case 0:
       return '0';
   }
