@@ -207,6 +207,7 @@ class ATPG {
   bool no_test{};          // true when it is proven that no test exists for this fault
   vector<int> pattern;
   
+  int podemx;
   int scoap;
   vector<ATPG::wptr> scoap_wlist;
 
