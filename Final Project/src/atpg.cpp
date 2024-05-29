@@ -36,19 +36,16 @@ void ATPG::test() {
 
     /* test generation mode */
     /* Figure 5 in the PODEM paper */
+    if(scoap)
+        SCOAP();
+
     int fail_count;
     forward_list<ATPG::fptr>::iterator it;
     forward_list<ATPG::fptr>::iterator prev;
-    SCOAP();
     while (fault_under_test != nullptr) {
         string vec = "";
         switch (podem(fault_under_test, current_backtracks, 0)) {
             case TRUE:
-                /* form a vector */
-                // vec.clear();
-                // for (int i : pattern) {
-                //     vec.push_back(itoc(i));
-                // }
                 fault_under_test->detect = TRUE;
                 flist_undetect.remove(fault_under_test);
                 in_vector_no++;
@@ -57,7 +54,7 @@ void ATPG::test() {
                 it = flist_undetect.begin();
                 fail_count = 0;
                 
-                while((it != flist_undetect.end()) && redundant_input() && (fail_count < 2000)){
+                while((it != flist_undetect.end()) && redundant_input() && (fail_count < 1500)){
                     //find secondary fault
                     if(podem(*it, current_backtracks, 1) == 1){
                         fail_count = 0;
@@ -144,7 +141,7 @@ void ATPG::test() {
 /* constructor of ATPG */
 ATPG::ATPG() {
     /* orginally assigned in tpgmain.c */
-    this->backtrack_limit = 50;     /* default value */
+    this->backtrack_limit = 80;     /* default value */
     this->total_attempt_num = 1;    /* default value */
     this->fsim_only = false;        /* flag to indicate fault simulation only */
     this->tdfsim_only = false;      /* flag to indicate tdfault simulation only */
@@ -160,6 +157,9 @@ ATPG::ATPG() {
 
     /* orginally assigned in test.c */
     this->in_vector_no = 0;         /* number of test vectors generated */
+
+    //scoap flag
+    this->scoap = 0;
 }
 
 /* constructor of WIRE */
@@ -328,7 +328,8 @@ void ATPG::SCOAP() {
         }
     }
 
-    // for(int i = 0; i < sort_wlist.size(); i++){
-    //     cout<<"wire "<<i<<" : "<<sort_wlist[i]->cc[0]<<", "<<sort_wlist[i]->cc[1]<<", "<<sort_wlist[i]->co<<endl;
-    // }
+    vector<ATPG::wptr> scoap_wlist(sort_wlist);
+    sort(scoap_wlist.begin(), scoap_wlist.end(), [](wptr a, wptr b) {
+        return (a->co < b->co) || ((a->co == b->co) && (a->level > b->level));
+    });
 }
