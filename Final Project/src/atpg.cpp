@@ -50,21 +50,23 @@ void ATPG::test() {
                 flist_undetect.remove(fault_under_test);
                 in_vector_no++;
 
-                prev = flist_undetect.before_begin();
-                it = flist_undetect.begin();
-                fail_count = 0;
-                
-                while((it != flist_undetect.end()) && redundant_input() && (fail_count < 1500)){
-                    //find secondary fault
-                    if(podem(*it, current_backtracks, 1) == 1){
-                        fail_count = 0;
-                        (*it)->detect = TRUE;
-                        it = flist_undetect.erase_after(prev);
-                    }
-                    else{
-                        prev = it;
-                        it++;
-                        fail_count++;
+                if(podemx){
+                    prev = flist_undetect.before_begin();
+                    it = flist_undetect.begin();
+                    fail_count = 0;
+                    
+                    while((it != flist_undetect.end()) && redundant_input() && (fail_count < 1500)){
+                        //find secondary fault
+                        if(podem(*it, current_backtracks, 1) == 1){
+                            fail_count = 0;
+                            (*it)->detect = TRUE;
+                            it = flist_undetect.erase_after(prev);
+                        }
+                        else{
+                            prev = it;
+                            it++;
+                            fail_count++;
+                        }
                     }
                 }
 
@@ -160,6 +162,7 @@ ATPG::ATPG() {
 
     //scoap flag
     this->scoap = 0;
+    this->podemx = 0;
 }
 
 /* constructor of WIRE */
