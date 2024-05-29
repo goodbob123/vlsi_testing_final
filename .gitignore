@@ -1,4 +1,4 @@
-*.o
-atpg
-*.ckt
-*.ckt.uf
+# *.o
+# atpg
+# *.ckt
+# *.ckt.uf
