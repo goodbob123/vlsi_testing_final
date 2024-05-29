@@ -10,26 +10,13 @@
 #atpg: cputime for rearranging gate inputs ./sample_circuits/c17.ckt: 0.0s 0.0s
 #atpg: cputime for creating dummy nodes ./sample_circuits/c17.ckt: 0.0s 0.0s
 #atpg: cputime for generating fault list ./sample_circuits/c17.ckt: 0.0s 0.0s
-T'11222 0'
-T'01222 1'
-T'01022 2'
-T'10022 2'
-T'00122 1'
-T'01022 1'
-T'10122 2'
-T'11022 0'
-T'00122 1'
-T'01022 1'
-T'11012 0'
-T'11102 0'
-T'02001 2'
-T'02010 2'
-T'10112 2'
-T'10112 2'
-T'02001 2'
-T'01202 0'
-T'01002 2'
-T'01202 0'
+T'01001 1'
+T'00110 1'
+T'10111 0'
+T'01010 0'
+T'10100 0'
+T'10011 1'
+T'11100 0'
 
 #number of aborted faults = 1
 
@@ -37,5 +24,5 @@ T'01202 0'
 
 #number of calling podem1 = 34
 
-#total number of backtracks = 243
+#total number of backtracks = 203
 #atpg: cputime for test pattern generation ./sample_circuits/c17.ckt: 0.0s 0.0s
