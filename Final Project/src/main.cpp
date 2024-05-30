@@ -13,12 +13,12 @@ int main(int argc, char *argv[]) {
   string inpFile, vetFile;
   int i, j;
   ATPG atpg; // create an ATPG obj, named atpg
-
+  bool DC_flag = false;
   atpg.timer(stdout, "START");
   atpg.detected_num = 1;
   i = 1;
 
-/* parse the input switches & arguments */
+  /* parse the input switches & arguments */
   while (i < argc) {
     // number of test generation attempts for each fault.  used in podem.cpp
     if (strcmp(argv[i], "-anum") == 0) {
@@ -35,6 +35,9 @@ int main(int argc, char *argv[]) {
       vetFile = string(argv[i + 1]);
       atpg.set_tdfsim_only(true);
       i += 2;
+    } else if (strcmp(argv[i], "-DC") == 0) {
+      DC_flag = true;
+      i++;
     }
       // for N-detect fault simulation
     else if (strcmp(argv[i], "-ndet") == 0) {
@@ -76,12 +79,11 @@ int main(int argc, char *argv[]) {
   atpg.create_dummy_gate(); //init_flist.cpp
   atpg.timer(stdout, "for creating dummy nodes");
 
-  if (!atpg.get_tdfsim_only()) atpg.generate_fault_list(); //init_flist.cpp
-  else atpg.generate_tdfault_list();
+  atpg.generate_tdfault_list(); //init_flist.cpp
   atpg.timer(stdout, "for generating fault list");
-
+  
   atpg.test(); //atpg.cpp
-  if (!atpg.get_tdfsim_only())atpg.compute_fault_coverage(); //init_flist.cpp
+  //if (!atpg.get_tdfsim_only())atpg.compute_fault_coverage(); //init_flist.cpp
   atpg.timer(stdout, "for test pattern generation");
   exit(EXIT_SUCCESS);
 }

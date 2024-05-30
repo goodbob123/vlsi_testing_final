@@ -88,14 +88,25 @@ class ATPG {
   /*defined in tdfsim.cpp*/
   void generate_tdfault_list();
   void transition_delay_fault_simulation(int &);
-  void tdfault_sim_a_vector(const string &, int &);
-  void tdfault_sim_a_vector2(const string &, int &);
+  void tdfault_sim_a_vector(const string &, int &, bool &);
+  void tdfault_sim_a_vector2(const string &, int &, bool &);
   int num_of_tdf_fault{};
   int detected_num{};
   bool get_tdfsim_only() { return tdfsim_only; }
 
   /* defined in atpg.cpp */
   void test();
+  bool redundant_input();
+  void SCOAP();
+
+  /* defined in data_compress.cpp */
+  void data_compress();
+  void reset_flist_undetect();
+  void get_pattern_score(const string &vec, int &score);
+  void tdfault_RVE_sim_a_vector(const string &, int &);
+  void tdfault_RVE_sim_a_vector2(const string &, int &);
+  void tdfault_sim_a_vector_for_detect_once(const string &, int &);
+  void tdfault_sim_a_vector2_for_detect_once(const string &, int &);
 
  private:
 
@@ -194,8 +205,9 @@ class ATPG {
   int no_of_backtracks{};  // current number of backtracks
   bool find_test{};        // true when a test pattern is found
   bool no_test{};          // true when it is proven that no test exists for this fault
+  vector<int> pattern;
 
-  int podem(fptr, int &);
+  int podem(fptr, int &, int);
   wptr fault_evaluate(fptr);
   void forward_imply(wptr);
   wptr test_possible(fptr);
@@ -235,6 +247,9 @@ class ATPG {
                                   in the presence of 16 faults. (for pfedfs) */
     int wlist_index;           /* index into the sorted_wlist array */
 
+    int cc[2] = {0, 0};
+    int co = 0;
+    
     //  the following functions control/observe the state of wire
     //  HCY 2020/2/6
     void set_(int type) { flag |= type; }
@@ -270,7 +285,6 @@ class ATPG {
    private:
     int flag = 0;                  /* 32 bit, records state of wire */
     int fault_flag = 0;            /* 32 bit, indicates the fault-injected bit position, for pfedfs */
-
   };// class WIRE
 
   //   this is a schematic for fanout
@@ -327,5 +341,6 @@ class ATPG {
     int to_swlist;             /* index to the sort_wlist[] */
     int fault_no;              /* fault index */
     int detected_time{};         /* for N-detect */
+    bool atpg_detected;        /* flag to indicate if the fault is detected by atpg */
   }; // class FAULT
 };// class ATPG
