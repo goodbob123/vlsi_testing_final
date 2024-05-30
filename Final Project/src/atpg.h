@@ -212,14 +212,19 @@ class ATPG {
   bool find_test{};        // true when a test pattern is found
   bool no_test{};          // true when it is proven that no test exists for this fault
   vector<int> pattern;
+  
+  int podemx;
+  int scoap;
+  vector<ATPG::wptr> scoap_wlist;
+
 
   int podem(fptr, int &, int);
   wptr fault_evaluate(fptr);
   void forward_imply(wptr);
   wptr test_possible(fptr);
   wptr find_pi_assignment(wptr, const int &);
-  wptr find_hardest_control(nptr);
-  wptr find_easiest_control(nptr);
+  wptr find_hardest_control(nptr, int object_level);
+  wptr find_easiest_control(nptr, int object_level);
   nptr find_propagate_gate(const int &);
   bool trace_unknown_path(wptr);
   bool check_test();

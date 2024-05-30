@@ -12,4 +12,4 @@ all : $(OBJECTS)
 %.o:  %.c  ${INCLUDES}
 	g++ $(CFLAGS) $< -o $@
 clean:
-	rm *.o atpg	
+	rm src/*.o src/atpg	

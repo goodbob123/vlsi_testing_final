@@ -350,7 +350,11 @@ ATPG::wptr ATPG::test_possible(const fptr fault) {
         return (nullptr);
 
       /* find the next gate n to propagate, Fig 8.5*/
-      if (!(n = find_propagate_gate(fault->node->owire.front()->level)))
+      if(scoap)
+        n = find_propagate_gate(fault->node->owire.front()->co);
+      else
+        n = find_propagate_gate(fault->node->owire.front()->level);
+      if (!n)
         return (nullptr);
 
       /*determine objective level according to the type of n.   Fig 8.8*/
@@ -468,25 +472,6 @@ ATPG::wptr ATPG::find_pi_assignment(const wptr object_wire, const int &object_le
     /* if not PI, backtrace to PI  Fig 9.3, 9.4, 9.5*/
   else {
     switch (object_wire->inode.front()->type) {
-      case OR:
-      case NAND:
-        if (object_level) new_object_wire = find_easiest_control(object_wire->inode.front());  // decision gate
-        else new_object_wire = find_hardest_control(object_wire->inode.front()); // imply gate
-        break;
-      case NOR:
-      case AND:
-        // TODO  similar to OR and NAND but different polarity
-        if (object_level) new_object_wire = find_hardest_control(object_wire->inode.front());
-        else new_object_wire = find_easiest_control(object_wire->inode.front());
-        break;
-        //  TODO END
-      case NOT:
-      case BUF:
-        new_object_wire = object_wire->inode.front()->iwire.front();
-        break;
-    }
-
-    switch (object_wire->inode.front()->type) {
       case BUF:
       case AND:
       case OR:
@@ -499,6 +484,26 @@ ATPG::wptr ATPG::find_pi_assignment(const wptr object_wire, const int &object_le
         new_object_level = object_level ^ 1;
         break;
     }
+
+    switch (object_wire->inode.front()->type) {
+      case OR:
+      case NAND:
+        if (object_level) new_object_wire = find_easiest_control(object_wire->inode.front(), new_object_level);  // decision gate
+        else new_object_wire = find_hardest_control(object_wire->inode.front(), new_object_level); // imply gate
+        break;
+      case NOR:
+      case AND:
+        // TODO  similar to OR and NAND but different polarity
+        if (object_level) new_object_wire = find_hardest_control(object_wire->inode.front(), new_object_level);
+        else new_object_wire = find_easiest_control(object_wire->inode.front(), new_object_level);
+        break;
+        //  TODO END
+      case NOT:
+      case BUF:
+        new_object_wire = object_wire->inode.front()->iwire.front();
+        break;
+    }
+
     if (new_object_wire) return (find_pi_assignment(new_object_wire, new_object_level));
     else return (nullptr);
   }
@@ -506,27 +511,47 @@ ATPG::wptr ATPG::find_pi_assignment(const wptr object_wire, const int &object_le
 
 
 /* Fig 9.4 */
-ATPG::wptr ATPG::find_hardest_control(const nptr n) {
+ATPG::wptr ATPG::find_hardest_control(const nptr n, int object_level) {
   int i;
-
+  if(scoap){
+    wptr target = nullptr;
+    for (i = n->iwire.size() - 1; i >= 0; i--) {
+      if (n->iwire[i]->value == U && ((target == nullptr) || (n->iwire[i]->cc[object_level] > target->cc[object_level]))) 
+        target = n->iwire[i];
+    }
+    return target;
+  }
+  else{
+    for (i = n->iwire.size() - 1; i >= 0; i--) {
+      if (n->iwire[i]->value == U) return (n->iwire[i]);
+    }
+    return (nullptr);
+  }
   /* because gate inputs are arranged in a increasing level order,
    * larger input index means harder to control */
-  for (i = n->iwire.size() - 1; i >= 0; i--) {
-    if (n->iwire[i]->value == U) return (n->iwire[i]);
-  }
-  return (nullptr);
+  
 }/* end of find_hardest_control */
 
 
 /* Fig 9.5 */
-ATPG::wptr ATPG::find_easiest_control(const nptr n) {
+ATPG::wptr ATPG::find_easiest_control(const nptr n, int object_level) {
   int i, nin;
   // TODO  similar to hardiest_control but increasing level order
-  for (i = 0, nin = n->iwire.size(); i < nin; i++) {
-    if (n->iwire[i]->value == U) return (n->iwire[i]);
+  if(scoap){
+    wptr target = nullptr;
+    for (i = 0, nin = n->iwire.size(); i < nin; i++) {
+      if (n->iwire[i]->value == U && ((target == nullptr) || (n->iwire[i]->cc[object_level] < target->cc[object_level]))) 
+        target = n->iwire[i];
+    }
+    return target;
   }
-  //  TODO END
-  return (nullptr);
+  else{
+    for (i = 0, nin = n->iwire.size(); i < nin; i++) {
+      if (n->iwire[i]->value == U) return (n->iwire[i]);
+    }
+    //  TODO END
+    return (nullptr);
+  }
 }/* end of find_easiest_control */
 
 
@@ -536,24 +561,44 @@ ATPG::wptr ATPG::find_easiest_control(const nptr n) {
 ATPG::nptr ATPG::find_propagate_gate(const int &level) {
   int i, j, nin;
   wptr w;
-
-  /* check every wire in decreasing level order
-   * so that wires nearer to PO is checked earlier. */
-  for (i = sort_wlist.size() - 1; i >= 0; i--) {
-    /* if reach the same level as the fault, then no propagation path exists */
-    if (sort_wlist[i]->level == level) return (nullptr);
-    /* gate outptu is U */
-    /* a marked gate means it is on the path to PO */
-    if ((sort_wlist[i]->value == U) &&
-        (sort_wlist[i]->inode.front()->is_marked())) {    // Check if marked
-      /*  cehck all gate intputs */
-      for (j = 0, nin = sort_wlist[i]->inode.front()->iwire.size(); j < nin; j++) {
-        w = sort_wlist[i]->inode.front()->iwire[j];
-        /* if there is ont gate intput is D or D_bar */
-        if ((w->value == D) || (w->value == D_bar)) {
-          if (trace_unknown_path(sort_wlist[i])) // check X path  Fig 8.6
-            return (sort_wlist[i]->inode.front()); // succeed.  returns this gate
-          break;
+  if(scoap){
+    for (i = 0; i < scoap_wlist.size(); i++) {
+      /* if reach the same level as the fault, then no propagation path exists */
+      if (scoap_wlist[i]->co == level) return (nullptr);
+      /* gate outptu is U */
+      /* a marked gate means it is on the path to PO */
+      if ((scoap_wlist[i]->value == U) &&
+          (scoap_wlist[i]->inode.front()->is_marked())) {    // Check if marked
+        /*  cehck all gate intputs */
+        for (j = 0, nin = scoap_wlist[i]->inode.front()->iwire.size(); j < nin; j++) {
+          w = scoap_wlist[i]->inode.front()->iwire[j];
+          /* if there is ont gate intput is D or D_bar */
+          if ((w->value == D) || (w->value == D_bar)) {
+            if (trace_unknown_path(scoap_wlist[i])) // check X path  Fig 8.6
+              return (scoap_wlist[i]->inode.front()); // succeed.  returns this gate
+            break;
+          }
+        }
+      }
+    }
+  }
+  else{
+    for (i = sort_wlist.size() - 1; i >= 0; i--) {
+      /* if reach the same level as the fault, then no propagation path exists */
+      if (sort_wlist[i]->level == level) return (nullptr);
+      /* gate outptu is U */
+      /* a marked gate means it is on the path to PO */
+      if ((sort_wlist[i]->value == U) &&
+          (sort_wlist[i]->inode.front()->is_marked())) {    // Check if marked
+        /*  cehck all gate intputs */
+        for (j = 0, nin = sort_wlist[i]->inode.front()->iwire.size(); j < nin; j++) {
+          w = sort_wlist[i]->inode.front()->iwire[j];
+          /* if there is ont gate intput is D or D_bar */
+          if ((w->value == D) || (w->value == D_bar)) {
+            if (trace_unknown_path(sort_wlist[i])) // check X path  Fig 8.6
+              return (sort_wlist[i]->inode.front()); // succeed.  returns this gate
+            break;
+          }
         }
       }
     }

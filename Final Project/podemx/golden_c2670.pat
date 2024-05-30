@@ -351,6 +351,12 @@ vector[0] detects 76 faults (4128)
 # Result:
 -----------------------
 # total transition delay faults: 6520
+<<<<<<< HEAD
 # total detected faults: 4128
 # fault coverage: 63.312883 %
 #atpg: cputime for test pattern generation ./sample_circuits/c2670.ckt: 0.6s 0.7s
+=======
+# total detected faults: 5184
+# fault coverage: 79.509202 %
+#atpg: cputime for test pattern generation ./sample_circuits/c2670.ckt: 0.2s 0.2s
+>>>>>>> fa3ba9c1a1eee054dd6ce6b9d6f5a747bf96672a

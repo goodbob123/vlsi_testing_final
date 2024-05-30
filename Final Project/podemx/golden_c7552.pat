@@ -14,6 +14,6 @@
 # Result:
 -----------------------
 # total transition delay faults: 19456
-# total detected faults: 0
-# fault coverage: 0.000000 %
-#atpg: cputime for test pattern generation ./sample_circuits/c7552.ckt: 0.2s 0.4s
+# total detected faults: 17224
+# fault coverage: 88.527961 %
+#atpg: cputime for test pattern generation ./sample_circuits/c7552.ckt: 1.1s 1.3s
