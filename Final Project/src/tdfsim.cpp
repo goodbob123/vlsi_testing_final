@@ -139,6 +139,8 @@ void ATPG::tdfault_sim_a_vector2(const string &vec, int &num_of_current_detect, 
     /* consider only active (aka. excited) fault
      * (sa1 with correct output of 0 or sa0 with correct output of 1) */
     if (f->fault_type != sort_wlist[f->to_swlist]->value) {
+      // cout << vec << endl;
+      // f->det->print();
 
       /* if f is a primary output or is directly connected to an primary output
        * the fault is detected */

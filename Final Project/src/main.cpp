@@ -81,7 +81,10 @@ int main(int argc, char *argv[]) {
 
   atpg.generate_tdfault_list(); //init_flist.cpp
   atpg.timer(stdout, "for generating fault list");
-  
+
+  atpg.init_reach();
+  atpg.timer(stdout, "for compute reachability");
+
   atpg.test(); //atpg.cpp
   //if (!atpg.get_tdfsim_only())atpg.compute_fault_coverage(); //init_flist.cpp
   atpg.timer(stdout, "for test pattern generation");
