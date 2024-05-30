@@ -93,11 +93,16 @@ class ATPG {
   int num_of_tdf_fault{};
   int detected_num{};
   bool get_tdfsim_only() { return tdfsim_only; }
+  int fault_rank_pattern(const string &);
+  int fault_rank_pattern2(const string &);
 
   /* defined in atpg.cpp */
   void test();
+  void set_parameter();
+  void reset_pattern();
   bool redundant_input();
   void SCOAP();
+  void fault_ranking();
 
   /* defined in data_compress.cpp */
   void data_compress();
@@ -206,13 +211,23 @@ class ATPG {
   bool find_test{};        // true when a test pattern is found
   bool no_test{};          // true when it is proven that no test exists for this fault
   vector<int> pattern;
+  vector<fptr> sorted_flist;
   
+  //parameter
+  int backtrack_limit_V2;
+  int backtrack_limit_V1;
+  int find_limit;
+  int rank_method;
+  int x_limit;
+
+  //flag
   int podemx;
   int scoap;
   vector<ATPG::wptr> scoap_wlist;
 
 
   int podem(fptr, int &, int);
+  int rank_podem(fptr);
   wptr fault_evaluate(fptr);
   void forward_imply(wptr);
   wptr test_possible(fptr);
@@ -226,7 +241,8 @@ class ATPG {
   void unmark_propagate_tree(nptr);
   int set_uniquely_implied_value(fptr);
   int backward_imply(wptr, const int &);
-
+  vector<fptr> second_fault();
+  
   /* declared in display.cpp */
   void display_line(fptr);
   void display_io();
@@ -253,7 +269,8 @@ class ATPG {
     int wlist_index;           /* index into the sorted_wlist array */
 
     int cc[2] = {0, 0};
-    int co = 0;
+    vector<int> co;
+    int min_co = 0;
     
     //  the following functions control/observe the state of wire
     //  HCY 2020/2/6
@@ -347,5 +364,12 @@ class ATPG {
     int fault_no;              /* fault index */
     int detected_time{};         /* for N-detect */
     bool atpg_detected;        /* flag to indicate if the fault is detected by atpg */
+  
+    //self-defined
+    string vec;
+    vector<int> pattern;
+    int scoap; 
+    int rank;
+
   }; // class FAULT
 };// class ATPG

@@ -20,21 +20,8 @@ int main(int argc, char *argv[]) {
 
   /* parse the input switches & arguments */
   while (i < argc) {
-    // number of test generation attempts for each fault.  used in podem.cpp
-    if (strcmp(argv[i], "-anum") == 0) {
-      atpg.set_total_attempt_num(atoi(argv[i + 1]));
-      i += 2;
-    } else if (strcmp(argv[i], "-bt") == 0) {
-      atpg.set_backtrack_limit(atoi(argv[i + 1]));
-      i += 2;
-    } else if (strcmp(argv[i], "-fsim") == 0) {
-      vetFile = string(argv[i + 1]);
-      atpg.set_fsim_only(true);
-      i += 2;
-    } else if (strcmp(argv[i], "-tdfsim") == 0) {
-      vetFile = string(argv[i + 1]);
-      atpg.set_tdfsim_only(true);
-      i += 2;
+    if (strcmp(argv[i], "-tdfatpg") == 0) {
+      i++;
     } else if (strcmp(argv[i], "-DC") == 0) {
       DC_flag = true;
       i++;
@@ -83,7 +70,6 @@ int main(int argc, char *argv[]) {
   atpg.timer(stdout, "for generating fault list");
   
   atpg.test(); //atpg.cpp
-  //if (!atpg.get_tdfsim_only())atpg.compute_fault_coverage(); //init_flist.cpp
   atpg.timer(stdout, "for test pattern generation");
   exit(EXIT_SUCCESS);
 }
@@ -98,22 +84,3 @@ void usage() {
   exit(EXIT_FAILURE);
 
 } /* end of usage() */
-
-
-
-
-void ATPG::set_fsim_only(const bool &b) {
-  this->fsim_only = b;
-}
-
-void ATPG::set_tdfsim_only(const bool &b) {
-  this->tdfsim_only = b;
-}
-
-void ATPG::set_total_attempt_num(const int &i) {
-  this->total_attempt_num = i;
-}
-
-void ATPG::set_backtrack_limit(const int &i) {
-  this->backtrack_limit = i;
-}
