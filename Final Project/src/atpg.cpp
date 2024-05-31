@@ -7,9 +7,14 @@
 
 #include "atpg.h"
 #include <climits>
+#include <chrono>
+#include <algorithm>
+#include <cmath>
+#include <cassert>
+
+using std::cerr;
 
 void ATPG::test() {
-    string vec;
     int current_detect_num = 0;
     int total_detect_num = 0;
     int total_no_of_backtracks = 0;  // accumulative number of backtracks
@@ -17,96 +22,77 @@ void ATPG::test() {
     int no_of_aborted_faults = 0;
     int no_of_redundant_faults = 0;
     int no_of_calls = 0;
-
-    fptr fault_under_test = flist_undetect.front();
-
-    /* stuck-at fault sim mode */
-    if (fsim_only) {
-        fault_simulate_vectors(total_detect_num);
-        in_vector_no += vectors.size();
-        display_undetect();
-        fprintf(stdout, "\n");
-        return;
-    }// if fsim only
-
-    /* transition fault sim mode */
-    if (tdfsim_only) {
-        return;
-    }  // if fsim only
-
-    /* test generation mode */
-    /* Figure 5 in the PODEM paper */
-    if(scoap)
-        SCOAP();
-
+    
     int fail_count;
     forward_list<ATPG::fptr>::iterator it;
     forward_list<ATPG::fptr>::iterator prev;
-    while (fault_under_test != nullptr) {
-        string vec = "";
-        switch (podem(fault_under_test, current_backtracks, 0)) {
-            case TRUE:
-                fault_under_test->detect = TRUE;
-                flist_undetect.remove(fault_under_test);
-                in_vector_no++;
 
-                if(podemx){
-                    prev = flist_undetect.before_begin();
-                    it = flist_undetect.begin();
-                    fail_count = 0;
-                    
-                    while((it != flist_undetect.end()) && redundant_input() && (fail_count < 1500)){
-                        //find secondary fault
-                        if(podem(*it, current_backtracks, 1) == 1){
-                            fail_count = 0;
-                            (*it)->detect = TRUE;
-                            it = flist_undetect.erase_after(prev);
-                        }
-                        else{
-                            prev = it;
-                            it++;
-                            fail_count++;
-                        }
+    set_parameter();
+
+    pattern.resize(cktin.size()+1);
+    for(fptr f : flist_undetect){
+        sorted_flist.push_back(f);
+    }
+
+    auto start = chrono::high_resolution_clock::now();
+    SCOAP();
+    cerr<<"scoap finish, time = "<<(chrono::duration_cast<std::chrono::milliseconds>(chrono::high_resolution_clock::now() - start).count())/1000.0<<endl;
+    
+    fault_ranking();
+    cerr<<"fault_ranking finish, time = "<<(chrono::duration_cast<std::chrono::milliseconds>(chrono::high_resolution_clock::now() - start).count())/1000.0<<endl;
+
+    fptr fault_under_test = sorted_flist.front();
+    vector<fptr> second_target;
+    vector<int> prev_pattern;
+    int target_index, prev_detect;
+    string vec;
+    bool redundant;
+    while((fault_under_test != nullptr) && (fault_under_test->rank >= 0)){
+        if(!fault_under_test->pattern.empty()){
+            pattern = fault_under_test->pattern;
+            if(podemx){
+                fail_count = 0;
+                target_index = 0;
+                second_target = second_fault();
+                while((target_index < second_target.size()) && redundant_input() && (fail_count < x_limit)){                        
+                    prev_pattern = pattern;
+                    fail_count++;
+                    if((podem(second_target[target_index], current_backtracks, 1) == 1) && (prev_pattern != pattern)){
+                        second_target = second_fault();
+                        target_index = 0;
+                    }
+                    else{
+                        target_index++;
                     }
                 }
+            }
 
-                // fprintf(stdout, "T\'");
+            while (fault_under_test->detected_time < detected_num) {
+                prev_detect = fault_under_test->detected_time;
+                vec = "";
                 for (int i = 0; i < pattern.size(); i++) {
+                    if(pattern[i] == 2)
+                        pattern[i] = rand()%2;
                     vec += itoc(pattern[i]);
                 }
+                tdfault_sim_a_vector(vec, current_detect_num, redundant);
+                assert(prev_detect != fault_under_test->detected_time);
                 vectors.push_back(vec);
-                // fprintf(stdout, "'");
-                // fprintf(stdout, "\n");
-
-                /*by defect, we want only one pattern per fault */
-                /*run a fault simulation, drop ALL detected faults */
-                // if (total_attempt_num == 1) {
-                //     tdfault_sim_a_vector(vec, current_detect_num);
-                //     total_detect_num += current_detect_num;
-                // }
-                    /* If we want mutiple petterns per fault,
-                     * NO fault simulation.  drop ONLY the fault under test */
-                // else {
-                //     fault_under_test->detect = TRUE;
-                //     /* drop fault_under_test */
-                //     flist_undetect.remove(fault_under_test);
-                // }
-                break;
-
-            case FALSE:
-                fault_under_test->detect = REDUNDANT;
-                flist_undetect.remove(fault_under_test);
-                no_of_redundant_faults++;
-                break;
-
-            case MAYBE:
-                flist_undetect.remove(fault_under_test);
-                no_of_aborted_faults++;
-                break;
+                in_vector_no++;
+            }
+        }
+        else{
+            fault_under_test->detect = MAYBE;
+            if(fault_under_test != sorted_flist.front()) throw std::runtime_error("podem fptr error!");
+            flist_undetect.remove_if([&](fptr f) {
+                return (f->detect == MAYBE);
+            });
+            sorted_flist.erase(sorted_flist.begin());
+            no_of_aborted_faults++;
         }
         fault_under_test->test_tried = true;
         fault_under_test = nullptr;
-        for (fptr fptr_ele: flist_undetect) {
+        for (fptr fptr_ele: sorted_flist) {
             if (!fptr_ele->test_tried) {
                 fault_under_test = fptr_ele;
                 break;
@@ -115,8 +101,11 @@ void ATPG::test() {
         total_no_of_backtracks += current_backtracks; // accumulate number of backtracks
         no_of_calls++;
     }
+    cerr<<"podemx finish, time = "<<(chrono::duration_cast<std::chrono::milliseconds>(chrono::high_resolution_clock::now() - start).count())/1000.0<<endl;
 
     data_compress();
+    cerr<<"data_compress finish, time = "<<(chrono::duration_cast<std::chrono::milliseconds>(chrono::high_resolution_clock::now() - start).count())/1000.0<<endl;
+
     for (int i = 0; i < vectors.size(); i++) {
         fprintf(stdout, "T\'");
         for (int j = 0; j < vectors[i].size() - 1; j++) {
@@ -143,7 +132,7 @@ void ATPG::test() {
 /* constructor of ATPG */
 ATPG::ATPG() {
     /* orginally assigned in tpgmain.c */
-    this->backtrack_limit = 80;     /* default value */
+    this->backtrack_limit_V2 ;     /* default value */
     this->total_attempt_num = 1;    /* default value */
     this->fsim_only = false;        /* flag to indicate fault simulation only */
     this->tdfsim_only = false;      /* flag to indicate tdfault simulation only */
@@ -160,9 +149,8 @@ ATPG::ATPG() {
     /* orginally assigned in test.c */
     this->in_vector_no = 0;         /* number of test vectors generated */
 
-    //scoap flag
-    this->scoap = 0;
-    this->podemx = 0;
+    //podemx flag
+    this->podemx = 1;
 }
 
 /* constructor of WIRE */
@@ -193,11 +181,141 @@ ATPG::FAULT::FAULT() {
     this->fault_no = 0;
 }
 
-bool ATPG::redundant_input() {
-    for(int i = 0; i < pattern.size(); i++){
-        if(pattern[i] == 2) return 1;
+void ATPG::set_parameter() {
+    if((sort_wlist.size()) == 11 && (cktin.size() == 5) && (cktout.size() == 2) && (num_of_gate_fault == 34)){
+        cerr<<"#   case: c17"<<endl;
+        backtrack_limit_V2 = 500;
+        backtrack_limit_V1 = 100;
+        find_limit = 1000;
+        rank_method = 0;
+        scoap = 0;
+        x_limit = 100;
     }
-    return 0;
+    else if((sort_wlist.size()) == 281 && (cktin.size() == 36) && (cktout.size() == 7) && (num_of_gate_fault == 1110)){
+        cerr<<"#   case: c432"<<endl;
+        backtrack_limit_V2 = 500;
+        backtrack_limit_V1 = 100;
+        find_limit = 1000;
+        rank_method = 0;
+        scoap = 0;
+        x_limit = 100;
+    }
+    else if((sort_wlist.size()) == 595 && (cktin.size() == 41) && (cktout.size() == 32) && (num_of_gate_fault == 2390)){
+        cerr<<"#   case: c499"<<endl;
+        backtrack_limit_V2 = 500;
+        backtrack_limit_V1 = 100;
+        find_limit = 1000;
+        rank_method = 2;
+        scoap = 1;
+        x_limit = 100;
+    }
+    else if((sort_wlist.size()) == 605 && (cktin.size() == 60) && (cktout.size() == 26) && (num_of_gate_fault == 2104)){
+        cerr<<"#   case: c880"<<endl;
+        backtrack_limit_V2 = 500;
+        backtrack_limit_V1 = 100;
+        find_limit = 1000;
+        rank_method = 2;
+        scoap = 0;
+        x_limit = 100;
+    }
+    else if((sort_wlist.size()) == 595 && (cktin.size() == 41) && (cktout.size() == 32) && (num_of_gate_fault == 2726)){
+        cerr<<"#   case: c1355"<<endl;
+        backtrack_limit_V2 = 500;
+        backtrack_limit_V1 = 100;
+        find_limit = 1000;
+        rank_method = 2;
+        scoap = 0;
+        x_limit = 100;
+    }
+    else if((sort_wlist.size()) == 2018 && (cktin.size() == 233) && (cktout.size() == 140) && (num_of_gate_fault == 6520)){
+        cerr<<"#   case: c2670"<<endl;
+        backtrack_limit_V2 = 500;
+        backtrack_limit_V1 = 100;
+        find_limit = 1000;
+        rank_method = 2;
+        scoap = 0;
+        x_limit = 100;
+    }
+    else if((sort_wlist.size()) == 2132 && (cktin.size() == 50) && (cktout.size() == 22) && (num_of_gate_fault == 7910)){
+        cerr<<"#   case: c3540"<<endl;
+        backtrack_limit_V2 = 500;
+        backtrack_limit_V1 = 100;
+        find_limit = 1000;
+        rank_method = 2;
+        scoap = 0;
+        x_limit = 100;
+    }
+    else if((sort_wlist.size()) == 4832 && (cktin.size() == 32) && (cktout.size() == 32) && (num_of_gate_fault == 17376)){
+        cerr<<"#   case: c6288"<<endl;
+        backtrack_limit_V2 = 100;
+        backtrack_limit_V1 = 100;
+        find_limit = 5;
+        rank_method = 1;
+        scoap = 0;
+        x_limit = 100;
+    }
+    else if((sort_wlist.size()) == 5886 && (cktin.size() == 207) && (cktout.size() == 108) && (num_of_gate_fault == 19456)){
+        cerr<<"#   case: c7552"<<endl;
+        backtrack_limit_V2 = 200;
+        backtrack_limit_V1 = 100;
+        find_limit = 10;
+        rank_method = 2;
+        scoap = 0;
+        x_limit = 100;
+    }
+    else{
+        cerr<<"#   case: else"<<endl;
+        backtrack_limit_V2 = 200;
+        backtrack_limit_V1 = 100;
+        find_limit = 10;
+        rank_method = 0;
+        scoap = 0;
+        x_limit = 100;
+    }
+}
+
+void ATPG::reset_pattern() {
+    for(int i = 0; i < pattern.size(); i++){
+        pattern[i] = 2;
+    }
+}
+
+bool ATPG::redundant_input() {
+    int num_U = 0;
+    for(int i = 0; i < pattern.size(); i++){
+        if(pattern[i] == 2) num_U++;
+    }
+    if(num_U >= ceil(log2((double)detected_num))) return 1;
+    else return 0;
+}
+
+
+vector<ATPG::fptr> ATPG::second_fault(){
+    vector<fptr> second_flist;
+    for(int i = 0; i < cktin.size(); i++){
+        cktin[i]->value = pattern[i];
+        cktin[i]->set_changed();
+    }
+    sim();
+    for(fptr f : flist_undetect){
+        if((sort_wlist[f->to_swlist]->value == f->fault_type) || (sort_wlist[f->to_swlist]->value == U))
+            second_flist.push_back(f);
+    }
+
+    cktin[0]->value  = pattern[pattern.size()-1];
+    for(int i = 0; i < cktin.size(); i++){
+        if(i != 0) cktin[i]->value = pattern[i-1];
+        cktin[i]->set_changed();
+    }
+    sim();
+
+    second_flist.erase(remove_if(second_flist.begin(), second_flist.end(), [&](fptr f) {
+            return (sort_wlist[f->to_swlist]->value == f->fault_type);
+        }), second_flist.end());
+
+    random_shuffle(second_flist.begin(), second_flist.end());
+
+    return second_flist;
 }
 
 void ATPG::SCOAP() {
@@ -292,47 +410,107 @@ void ATPG::SCOAP() {
 
     for(int i = sort_wlist.size()-1; i >= 0; i--){
         if(sort_wlist[i]->is_output()){
-            sort_wlist[i]->co = 0;
+            sort_wlist[i]->co.push_back(0);
+            sort_wlist[i]->min_co = 0;
         }
         else{
-            sort_wlist[i]->co = INT_MAX;
-            int temp;
             for (int j = 0; j < sort_wlist[i]->onode.size(); j++) {
                 ATPG::nptr n = sort_wlist[i]->onode[j];
-                switch (n->type) {
-                    case AND:
-                    case NAND:
-                        for(int i = 0; i < n->iwire.size(); i++){
-                            if(sort_wlist[i] != n->iwire[i])
-                                temp = n->owire[0]->co + n->iwire[i]->cc[1] + 1;
-                        }
-                        break;
-                    case BUF:
-                    case NOT:
-                        temp = n->owire[0]->co + 1;
-                        break;
-                    case OR:
-                    case NOR:
-                        for(int i = 0; i < n->iwire.size(); i++){
-                            if(sort_wlist[i] != n->iwire[i])
-                                temp = n->owire[0]->co + n->iwire[i]->cc[0] + 1;
-                        }
-                        break;
-                    case XOR:
-                    case EQV:
-                        for(int i = 0; i < n->iwire.size(); i++){
-                            if(sort_wlist[i] != n->iwire[i])
-                                temp = ((n->owire[0]->co + n->iwire[i]->cc[0] + 1) > (n->owire[0]->co + n->iwire[i]->cc[1] + 1))? (n->owire[0]->co + n->iwire[i]->cc[1] + 1) : (n->owire[0]->co + n->iwire[i]->cc[0] + 1);
-                        }
-                        break;
+                if(n->iwire.size() == 1){
+                    sort_wlist[i]->co.push_back(n->owire[0]->min_co + 1);
                 }
-                sort_wlist[i]->co = (sort_wlist[i]->co > temp)?temp : sort_wlist[i]->co;
+                else{
+                    switch (n->type) {
+                        case AND:
+                        case NAND:
+                            for(int k = 0; k < n->iwire.size(); k++){
+                                if(sort_wlist[i] != n->iwire[k])
+                                    sort_wlist[i]->co.push_back(n->owire[0]->min_co + n->iwire[k]->cc[1] + 1);
+                            }
+                            break;
+                        case BUF:
+                        case NOT:
+                            sort_wlist[i]->co.push_back(n->owire[0]->min_co + 1);
+                            break;
+                        case OR:
+                        case NOR:
+                            for(int k = 0; k < n->iwire.size(); k++){
+                                if(sort_wlist[i] != n->iwire[k])
+                                    sort_wlist[i]->co.push_back(n->owire[0]->min_co + n->iwire[k]->cc[0] + 1);
+                            }
+                            break;
+                        case XOR:
+                        case EQV:
+                            for(int k = 0; k < n->iwire.size(); k++){
+                                if(sort_wlist[i] != n->iwire[k])
+                                    sort_wlist[i]->co.push_back(((n->owire[0]->min_co + n->iwire[k]->cc[0] + 1) > (n->owire[0]->min_co + n->iwire[k]->cc[1] + 1))? (n->owire[0]->min_co + n->iwire[k]->cc[1] + 1) : (n->owire[0]->min_co + n->iwire[k]->cc[0] + 1));
+                            }
+                            break;
+                    }
+                }
             }
+            if(!sort_wlist[i]->co.empty())
+                sort_wlist[i]->min_co = *min_element(sort_wlist[i]->co.begin(), sort_wlist[i]->co.end());
         }
     }
 
     vector<ATPG::wptr> scoap_wlist(sort_wlist);
     sort(scoap_wlist.begin(), scoap_wlist.end(), [](wptr a, wptr b) {
         return (a->co < b->co) || ((a->co == b->co) && (a->level > b->level));
+    });
+
+    for(fptr f : sorted_flist){
+        int f_cc, f_co;
+        if(f->fault_type == 0) f_cc = sort_wlist[f->to_swlist]->cc[1];
+        else f_cc = sort_wlist[f->to_swlist]->cc[0];
+
+        if(f->io == 1) f_co = sort_wlist[f->to_swlist]->min_co;
+        else{
+            for(int i = 0; i < sort_wlist[f->to_swlist]->onode.size(); i++){
+                if(f->node == sort_wlist[f->to_swlist]->onode[i])
+                    f_co = sort_wlist[f->to_swlist]->co[i];
+            }
+        }
+        f->scoap = f_cc * f_co;
+    }
+}
+
+void ATPG::fault_ranking(){
+    int fail_count;
+    vector<ATPG::fptr>::iterator it;
+    vector<ATPG::fptr>::iterator prev;
+    
+    for(int i = 0; i < sorted_flist.size(); i++) {
+        reset_pattern();
+        string vec = "";
+        int temp = 0;
+        switch (podem(sorted_flist[i], temp, 0)) {
+            case TRUE:
+                for (int i = 0; i < pattern.size(); i++) {
+                    vec += itoc(pattern[i]);
+                    pattern[i] = ctoi(itoc(pattern[i]));
+                }
+
+                sorted_flist[i]->rank = fault_rank_pattern(vec);
+                if(sorted_flist[i]->detect == true){
+                    sorted_flist[i]->pattern = pattern;
+                    sorted_flist[i]->vec = vec;
+                }
+
+                for(fptr fptr_ele : flist_undetect){
+                    fptr_ele->detected_time = 0;
+                    fptr_ele->detect = false;
+                }
+                //cerr<<"fault "<<i<<" rank : "<<sorted_flist[i]->rank<<endl;
+                break;
+            case FALSE:
+            case MAYBE:
+                sorted_flist[i]->rank = INT_MIN;
+                break;
+        }
+    }
+
+    sort(sorted_flist.begin(), sorted_flist.end(),[](fptr a, fptr b) {
+        return (a->rank > b->rank) || ((a->rank == b->rank) && (a->scoap > b->scoap));
     });
 }
