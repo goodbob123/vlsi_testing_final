@@ -10,11 +10,11 @@
 #atpg: cputime for rearranging gate inputs ./sample_circuits/c17.ckt: 0.0s 0.0s
 #atpg: cputime for creating dummy nodes ./sample_circuits/c17.ckt: 0.0s 0.0s
 #atpg: cputime for generating fault list ./sample_circuits/c17.ckt: 0.0s 0.0s
+T'01011 1'
 T'00110 1'
+T'01001 1'
 T'10110 0'
 T'10001 1'
-T'01001 1'
-T'01011 1'
 T'11101 0'
 
 #number of aborted faults = 0

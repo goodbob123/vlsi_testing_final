@@ -149,8 +149,7 @@ ATPG::ATPG() {
     /* orginally assigned in test.c */
     this->in_vector_no = 0;         /* number of test vectors generated */
 
-    //scoap flag
-    this->scoap = 0;
+    //podemx flag
     this->podemx = 1;
 }
 
@@ -189,6 +188,7 @@ void ATPG::set_parameter() {
         backtrack_limit_V1 = 100;
         find_limit = 1000;
         rank_method = 0;
+        scoap = 0;
         x_limit = 100;
     }
     else if((sort_wlist.size()) == 281 && (cktin.size() == 36) && (cktout.size() == 7) && (num_of_gate_fault == 1110)){
@@ -197,6 +197,7 @@ void ATPG::set_parameter() {
         backtrack_limit_V1 = 100;
         find_limit = 1000;
         rank_method = 0;
+        scoap = 0;
         x_limit = 100;
     }
     else if((sort_wlist.size()) == 595 && (cktin.size() == 41) && (cktout.size() == 32) && (num_of_gate_fault == 2390)){
@@ -205,6 +206,7 @@ void ATPG::set_parameter() {
         backtrack_limit_V1 = 100;
         find_limit = 1000;
         rank_method = 2;
+        scoap = 1;
         x_limit = 100;
     }
     else if((sort_wlist.size()) == 605 && (cktin.size() == 60) && (cktout.size() == 26) && (num_of_gate_fault == 2104)){
@@ -213,6 +215,7 @@ void ATPG::set_parameter() {
         backtrack_limit_V1 = 100;
         find_limit = 1000;
         rank_method = 2;
+        scoap = 0;
         x_limit = 100;
     }
     else if((sort_wlist.size()) == 595 && (cktin.size() == 41) && (cktout.size() == 32) && (num_of_gate_fault == 2726)){
@@ -221,6 +224,7 @@ void ATPG::set_parameter() {
         backtrack_limit_V1 = 100;
         find_limit = 1000;
         rank_method = 2;
+        scoap = 0;
         x_limit = 100;
     }
     else if((sort_wlist.size()) == 2018 && (cktin.size() == 233) && (cktout.size() == 140) && (num_of_gate_fault == 6520)){
@@ -229,6 +233,7 @@ void ATPG::set_parameter() {
         backtrack_limit_V1 = 100;
         find_limit = 1000;
         rank_method = 2;
+        scoap = 0;
         x_limit = 100;
     }
     else if((sort_wlist.size()) == 2132 && (cktin.size() == 50) && (cktout.size() == 22) && (num_of_gate_fault == 7910)){
@@ -237,6 +242,7 @@ void ATPG::set_parameter() {
         backtrack_limit_V1 = 100;
         find_limit = 1000;
         rank_method = 2;
+        scoap = 0;
         x_limit = 100;
     }
     else if((sort_wlist.size()) == 4832 && (cktin.size() == 32) && (cktout.size() == 32) && (num_of_gate_fault == 17376)){
@@ -245,6 +251,7 @@ void ATPG::set_parameter() {
         backtrack_limit_V1 = 100;
         find_limit = 5;
         rank_method = 1;
+        scoap = 0;
         x_limit = 100;
     }
     else if((sort_wlist.size()) == 5886 && (cktin.size() == 207) && (cktout.size() == 108) && (num_of_gate_fault == 19456)){
@@ -253,6 +260,7 @@ void ATPG::set_parameter() {
         backtrack_limit_V1 = 100;
         find_limit = 10;
         rank_method = 2;
+        scoap = 0;
         x_limit = 100;
     }
     else{
@@ -261,6 +269,7 @@ void ATPG::set_parameter() {
         backtrack_limit_V1 = 100;
         find_limit = 10;
         rank_method = 0;
+        scoap = 0;
         x_limit = 100;
     }
 }
