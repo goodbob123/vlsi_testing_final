@@ -28,13 +28,37 @@ void ATPG::test() {
     forward_list<ATPG::fptr>::iterator prev;
 
     set_parameter();
-
+    auto start = chrono::high_resolution_clock::now();
     pattern.resize(cktin.size()+1);
+    // heuristics : random sim to detect some simple faults
+    int random_sim_num = num_of_tdf_fault * 10;
+    int random_sim_no_detect = 0;
+    int random_sim_detect_num = 0;
+    for (int i = 0; i < random_sim_num; ++i) {
+        string vec = "";
+        for (int j = 0; j < cktin.size() + 1; ++j) {
+            vec += rand() % 2 ? '1' : '0';
+        }
+        bool is_redundant;
+        tdfault_sim_a_vector(vec, current_detect_num, is_redundant);
+        if (current_detect_num != 0) {
+            vectors.push_back(vec);
+            random_sim_detect_num += current_detect_num;
+            current_detect_num = 0;
+        }
+        random_sim_no_detect = current_detect_num == 0 ? random_sim_no_detect + 1 : 0;
+        if (random_sim_no_detect > num_of_tdf_fault * 0.1) {
+            cerr << "Random simulation cannot detect any fault!" << endl;
+            break;
+        }
+    }
+    cerr << "total tdfault = " << num_of_tdf_fault << endl;
+    cerr << "random sim detect num = " << random_sim_detect_num << endl;
+    cerr << "random sim finish, time = " << (chrono::duration_cast<std::chrono::milliseconds>(chrono::high_resolution_clock::now() - start).count()) / 1000.0 << endl;
     for(fptr f : flist_undetect){
         sorted_flist.push_back(f);
     }
 
-    auto start = chrono::high_resolution_clock::now();
     SCOAP();
     cerr<<"scoap finish, time = "<<(chrono::duration_cast<std::chrono::milliseconds>(chrono::high_resolution_clock::now() - start).count())/1000.0<<endl;
     
@@ -70,15 +94,33 @@ void ATPG::test() {
             while (fault_under_test->detected_time < detected_num) {
                 prev_detect = fault_under_test->detected_time;
                 vec = "";
-                for (int i = 0; i < pattern.size(); i++) {
-                    if(pattern[i] == 2)
-                        pattern[i] = rand()%2;
-                    vec += itoc(pattern[i]);
+                // (1) =====================
+                // for (int i = 0; i < pattern.size(); i++) {
+                //     if(pattern[i] == 2)
+                //         pattern[i] = rand()%2;
+                //     vec += itoc(pattern[i]);
+                // }
+                // tdfault_sim_a_vector(vec, current_detect_num, redundant);
+                // assert(prev_detect != fault_under_test->detected_time);
+                // vectors.push_back(vec);
+                // in_vector_no++;
+                // (2) =====================
+                vector<int> temp = pattern;
+                // heuristics : for a pattern with some PI unknown, we generate 3 vectors
+                for (int j = 0; j < 3; j++) {
+                    for (int i = 0; i < temp.size(); i++) {
+                        if (temp[i] == 2)
+                            temp[i] = rand() % 2;
+                        vec += itoc(temp[i]);
+                    }
+                    tdfault_sim_a_vector(vec, current_detect_num, redundant);
+                    assert(prev_detect != fault_under_test->detected_time);
+                    vectors.push_back(vec);
+                    in_vector_no++;
+                    vec = "";
+                    temp = pattern;
                 }
-                tdfault_sim_a_vector(vec, current_detect_num, redundant);
-                assert(prev_detect != fault_under_test->detected_time);
-                vectors.push_back(vec);
-                in_vector_no++;
+                // =====================
             }
         }
         else{
