@@ -88,6 +88,12 @@ vector[0] detects 3 faults (1840)
 # Result:
 -----------------------
 # total transition delay faults: 7910
+<<<<<<< HEAD
 # total detected faults: 1840
 # fault coverage: 23.261694 %
 #atpg: cputime for test pattern generation ./sample_circuits/c3540.ckt: 0.2s 0.3s
+=======
+# total detected faults: 0
+# fault coverage: 0.000000 %
+#atpg: cputime for test pattern generation ./sample_circuits/c3540.ckt: 0.1s 0.2s
+>>>>>>> 510fe77da7ac2323f329b7070aaee0b30a556dcd

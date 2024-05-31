@@ -57,6 +57,8 @@
 #define D  3
 #define D_bar  4
 
+#define CONFLICT 2
+
 using namespace std;
 
 /* this is an ATPG solver */
@@ -96,6 +98,8 @@ class ATPG {
   int fault_rank_pattern(const string &);
   int fault_rank_pattern2(const string &);
 
+  /* defined in faultRank.cpp*/
+  void init_reach();
   /* defined in atpg.cpp */
   void test();
   void set_parameter();
@@ -119,9 +123,11 @@ class ATPG {
   class WIRE;
   class NODE;
   class FAULT;
+  class REACH;
   typedef WIRE *wptr;                 /* using pointer to access/manipulate the instances of WIRE */
   typedef NODE *nptr;                 /* using pointer to access/manipulate the instances of NODE */
   typedef FAULT *fptr;                 /* using pointer to access/manipulate the instances of FAULT */
+  typedef REACH *rptr;
   typedef unique_ptr<WIRE> wptr_s;    /* using smart pointer to hold/maintain the instances of WIRE */
   typedef unique_ptr<NODE> nptr_s;    /* using smart pointer to hold/maintain the instances of NODE */
   typedef unique_ptr<FAULT> fptr_s;    /* using smart pointer to hold/maintain the instances of FAULT */
@@ -249,6 +255,103 @@ class ATPG {
   void display_undetect();
   void display_fault(fptr);
 
+
+  class REACH {
+    public:
+      REACH(size_t num_in) {
+        _num_in = num_in + 1;                                     // +1 for V2
+        _reach = vector<unsigned int>(((_num_in - 1) / 16) + 1, 0); // _n = 1~16 -> 1
+        set_uncompute();
+      }
+
+      int size() {
+        if (_size < 0) compute_size();
+        return _size;
+      }
+      size_t get_num_in() { return _num_in; }
+      bool is_conflict() {
+        if (_size < 0) compute_size();
+        return _conflict;
+      }
+      void print() {
+        for (size_t i = 0; i < _num_in; i++) {
+          auto &slot = _reach[i / 16];
+          unsigned int mask0 = 1 << (2 * (i % 16));
+          unsigned int mask1 = 1 << (2 * (i % 16) + 1);
+          // cout << (slot & mask0) << " " <<  (slot & mask1) << endl;
+          if ((slot & mask0) != 0)
+            cout << "~" << i << " ";
+          if ((slot & mask1) != 0)
+            cout << i << " ";
+        }
+        cout << endl;
+      }
+
+      void set_uncompute() {
+        _size = -1;
+        _conflict = false;
+      }
+      void compute_size() {
+        _size = 0;
+        for (auto &slot : _reach) {
+          for (size_t i = 0; i < 16; i++) {
+            size_t mask = 3 << (2 * i);
+            size_t rc_in = slot & mask;
+            if (rc_in != 0)
+              _size++;
+            if (rc_in == mask)
+              _conflict = true;
+          }
+        }
+      }
+
+      void set(size_t in_id, bool val) {
+        set_uncompute();
+        auto &slot = _reach[in_id / 16];
+        size_t shift = val ? 2 * (in_id % 16) + 1 : 2 * (in_id % 16);
+        slot |= 1 << shift;
+      }
+      REACH getV1() {
+        return *this;
+      }
+      REACH getV2() {
+        const size_t n = _reach.size();
+        REACH v2_rc = *this;
+
+        for (size_t i = 0; i < n; i++) {
+          auto &slot = v2_rc._reach[i];
+          slot >>= 2;
+          if (i + 1 < n)
+            slot |= (_reach[i + 1] % 4) << 30;
+        }
+
+        auto &slot = v2_rc._reach[n - 1];
+        size_t shift = 2 * ((_num_in - 1) % 16);
+        v2_rc._reach[n - 1] |= (_reach[0] % 4) << shift;
+
+        return v2_rc;
+      }
+      REACH &operator|=(const REACH &r) {
+        set_uncompute();
+        for (size_t i = 0; i < _reach.size() && i < r._reach.size(); i++) {
+          _reach[i] |= r._reach[i];
+        }
+        return (*this);
+      }
+      REACH &operator&=(const REACH &r) {
+        set_uncompute();
+        for (size_t i = 0; i < _reach.size() && i < r._reach.size(); i++) {
+          _reach[i] &= r._reach[i];
+        }
+        return (*this);
+      }
+
+    private:
+      bool _conflict;
+      int _size;
+      size_t _num_in;
+      vector<unsigned int> _reach;
+  };
   /* declaration of WIRE, NODE, and FAULT classes */
   /* in our model, a wire has inputs (inode) and outputs (onode) */
   class WIRE {
@@ -258,6 +361,11 @@ class ATPG {
     string name;               /* ascii name of wire */
     vector<nptr> inode;        /* nodes driving this wire */
     vector<nptr> onode;        /* nodes driven by this wire */
+
+    vector<rptr> _rc0;
+    vector<rptr> _rc1;
+    vector<rptr> _ro;
+
     int value;                 /* logic value [0|1|2] of the wire (2 = unknown)  
 	                             NOTE: we use [0|1|2] in fault-free sim 
 								 but we use [00|11|01] in parallel fault sim  */
@@ -304,6 +412,21 @@ class ATPG {
     void set_fault_free() { fault_flag &= ALL_ZERO; }
     void inject_fault_at(int bit_position) { fault_flag |= (3 << (bit_position << 1)); }  //  inject a fault at bit position.  Two bits (11) means this position is a fault.  When parallel fault sim, this corresponds to fault position in wire_value2 
     bool has_fault_at(int bit_position) { return fault_flag & (3 << (bit_position << 1)); }
+
+    void backup_rc() {
+      if (_rc0.size() == 1) for (size_t j = 0; j < onode.size(); j++) _rc0.push_back(_rc0[0]);
+      if (_rc1.size() == 1) for (size_t j = 0; j < onode.size(); j++) _rc1.push_back(_rc1[0]);
+      // if (_ro.size() == 1) for (size_t j = 0; j < onode.size(); j++) _ro.push_back(_rc1[0]);
+    }
+    void backup_ro() {
+      if (_ro.size() == 1 && onode.size() == 1) _ro.push_back(_ro[0]);
+    }
+    size_t get_reach_id (nptr n) {
+      if (inode[0] == n) return 0;
+      for (size_t i = 0; i < onode.size(); i++) {
+        if (onode[i] == n) return i + 1;
+      }
+    }
    private:
     int flag = 0;                  /* 32 bit, records state of wire */
     int fault_flag = 0;            /* 32 bit, indicates the fault-injected bit position, for pfedfs */
@@ -371,5 +494,39 @@ class ATPG {
     int scoap; 
     int rank;
 
+
+    rptr det = 0;
+    wptr get_wire() {
+      if (io == 0) return node->iwire[index];
+      else return node->owire[0];
+    }
+    rptr get_det() {
+      if (det && det->size() > -1) return det;
+      else {
+        wptr w = get_wire();
+        size_t id = w->get_reach_id(node);
+        rptr rc0 = w->_rc0[id];
+        rptr rc1 = w->_rc1[id];
+        rptr ro = w->_ro[id];
+        det = new REACH(rc0->get_num_in());
+        if (fault_type == STR) {
+          *det |= rc0->getV1();
+          *det |= rc1->getV2();
+          *det |= ro->getV2();
+        } else if (fault_type == STF) {
+          *det |= rc1->getV1();
+          *det |= rc0->getV2();
+          *det |= ro->getV2();
+        }
+        return det;
+      }
+    }
+    // fptr get_fi(size_t in_id) {
+    //   wptr w = get_wire();
+    //   if (in_id < 2) {
+    //     nptr n = w->inode[0];
+    //     return 
+    //   }
+    // }
   }; // class FAULT
 };// class ATPG

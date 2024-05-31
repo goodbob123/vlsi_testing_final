@@ -6,9 +6,9 @@
 #number of gates = 2082
 #number of wires = 2132
 #atpg: cputime for reading in circuit ./sample_circuits/c3540.ckt: 0.0s 0.0s
-#atpg: cputime for levelling circuit ./sample_circuits/c3540.ckt: 0.0s 0.0s
-#atpg: cputime for rearranging gate inputs ./sample_circuits/c3540.ckt: 0.0s 0.0s
-#atpg: cputime for creating dummy nodes ./sample_circuits/c3540.ckt: 0.0s 0.0s
+#atpg: cputime for levelling circuit ./sample_circuits/c3540.ckt: 0.1s 0.1s
+#atpg: cputime for rearranging gate inputs ./sample_circuits/c3540.ckt: 0.0s 0.1s
+#atpg: cputime for creating dummy nodes ./sample_circuits/c3540.ckt: 0.0s 0.1s
 #atpg: cputime for generating fault list ./sample_circuits/c3540.ckt: 0.0s 0.1s
 vector[75] detects 375 faults (375)
 vector[74] detects 116 faults (491)
@@ -90,6 +90,12 @@ vector[0] detects 2 faults (1834)
 # Result:
 -----------------------
 # total transition delay faults: 7910
+<<<<<<< HEAD
 # total detected faults: 1834
 # fault coverage: 23.185841 %
 #atpg: cputime for test pattern generation ./sample_circuits/c3540.ckt: 0.2s 0.3s
+=======
+# total detected faults: 0
+# fault coverage: 0.000000 %
+#atpg: cputime for test pattern generation ./sample_circuits/c3540.ckt: 0.1s 0.2s
+>>>>>>> 510fe77da7ac2323f329b7070aaee0b30a556dcd

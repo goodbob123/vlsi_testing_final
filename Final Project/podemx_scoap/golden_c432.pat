@@ -5,6 +5,7 @@
 #number of outputs = 7
 #number of gates = 245
 #number of wires = 281
+<<<<<<< HEAD
 #atpg: cputime for reading in circuit ./sample_circuits/c432.ckt: 0.0s 0.0s
 #atpg: cputime for levelling circuit ./sample_circuits/c432.ckt: 0.0s 0.0s
 #atpg: cputime for rearranging gate inputs ./sample_circuits/c432.ckt: 0.0s 0.0s
@@ -36,3 +37,5 @@ vector[0] detects 5 faults (129)
 # total detected faults: 129
 # fault coverage: 11.621622 %
 #atpg: cputime for test pattern generation ./sample_circuits/c432.ckt: 0.0s 0.0s
+=======
+>>>>>>> 510fe77da7ac2323f329b7070aaee0b30a556dcd
