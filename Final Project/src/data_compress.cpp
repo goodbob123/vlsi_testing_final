@@ -46,8 +46,8 @@ void ATPG::data_compress() {
     int total_detect_num = 0;
 
     for (int i = vectors.size() - 1; i >= 0; i--) {
-        bool is_redundant_fault = true;
-        tdfault_sim_a_vector(vectors[i], current_detect_num, is_redundant_fault);
+        bool is_redundant_vector = true;
+        tdfault_sim_a_vector(vectors[i], current_detect_num, is_redundant_vector);
         total_detect_num += current_detect_num;
     }
 
@@ -104,9 +104,9 @@ void ATPG::data_compress() {
 
             /* for every vector */
             for (int i = vectors.size() - 1; i >= 0; i--) {
-                bool is_redundant_fault = true;
-                tdfault_sim_a_vector(vectors[i], current_detect_num, is_redundant_fault);
-                if (is_redundant_fault) {
+                bool is_redundant_vector = true;
+                tdfault_sim_a_vector(vectors[i], current_detect_num, is_redundant_vector);
+                if (is_redundant_vector) {
                     vectors.erase(vectors.begin() + i);
                     improved = true;
                     continue;
@@ -147,8 +147,8 @@ void ATPG::data_compress() {
 
         // (2-2) check the double comfirm vectors, let fault coverage increase
         for (int i = _double_comfirm_vectors.size() - 1; i >= 0; --i) {
-            bool is_redundant_fault = true;
-            tdfault_sim_a_vector(_double_comfirm_vectors[i], current_detect_num, is_redundant_fault);
+            bool is_redundant_vector = true;
+            tdfault_sim_a_vector(_double_comfirm_vectors[i], current_detect_num, is_redundant_vector);
             if (current_detect_num == 0) {
                 continue;
             }
@@ -173,8 +173,8 @@ void ATPG::data_compress() {
     // current_detect_num = 0;
     // total_detect_num = 0;
     // for (int i = vectors.size() - 1; i >= 0; i--) {
-    //     bool is_redundant_fault = true;
-    //     tdfault_sim_a_vector(vectors[i], current_detect_num, is_redundant_fault);
+    //     bool is_redundant_vector = true;
+    //     tdfault_sim_a_vector(vectors[i], current_detect_num, is_redundant_vector);
     //     total_detect_num += current_detect_num;
     // }
     // if (total_detect_num != origin_detect_num) {
