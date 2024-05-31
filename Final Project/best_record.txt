@@ -1,0 +1,46 @@
+
+#   case: c17
+after compress vectors size: 7
+after compress coverage: 94.1176%
+data_compress finish, time = 0
+
+#   case: c432
+after compress vectors size: 20
+after compress coverage: 11.6216%
+data_compress finish, time = 0.078
+
+#   case: c499
+after compress vectors size: 53
+after compress coverage: 95.523%
+data_compress finish, time = 0.845
+
+#   case: c880
+after compress vectors size: 53
+after compress coverage: 50.3802%
+data_compress finish, time = 16.31
+
+#   case: c1355
+after compress vectors size: 53
+after compress coverage: 38.4079%
+data_compress finish, time = 2.251
+
+#   case: c2670
+after compress vectors size: 151
+after compress coverage: 93.8037%
+data_compress finish, time = 66.814
+
+#   case: c3540
+after compress vectors size: 86
+after compress coverage: 23.1985%
+data_compress finish, time = 15.266
+
+#   case: c6288
+after compress vectors size: 74
+after compress coverage: 97.6174%
+data_compress finish, time = 3.599
+
+#   case: c7552
+after compress vectors size: 260
+after compress coverage: 98.1908%
+data_compress finish, time = 18.9
+
