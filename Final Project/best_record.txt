@@ -1,46 +1,191 @@
+ndet = 1
+
 
 #   case: c17
-after compress vectors size: 7
+total fault: 34
+origin vectors size: 9
+origin fault coverage: 94.1176%
+after compress vectors size: 9
 after compress coverage: 94.1176%
+compress ratio:1
+-----------------------
 data_compress finish, time = 0
 
 #   case: c432
+total fault: 1110
+origin vectors size: 20
+origin fault coverage: 11.6216%
 after compress vectors size: 20
 after compress coverage: 11.6216%
-data_compress finish, time = 0.078
+compress ratio:1
+-----------------------
+data_compress finish, time = 0.081
 
 #   case: c499
-after compress vectors size: 53
-after compress coverage: 95.523%
-data_compress finish, time = 0.845
+total fault: 2390
+origin vectors size: 114
+origin fault coverage: 95.6067%
+after compress vectors size: 54
+after compress coverage: 95.6067%
+compress ratio:2.11111
+-----------------------
+data_compress finish, time = 0.729
 
 #   case: c880
-after compress vectors size: 53
+total fault: 2104
+origin vectors size: 130
+origin fault coverage: 50.3802%
+after compress vectors size: 62
 after compress coverage: 50.3802%
-data_compress finish, time = 16.31
+compress ratio:2.09677
+-----------------------
+data_compress finish, time = 16.605
 
 #   case: c1355
-after compress vectors size: 53
+total fault: 2726
+origin vectors size: 59
+origin fault coverage: 38.4079%
+after compress vectors size: 55
 after compress coverage: 38.4079%
-data_compress finish, time = 2.251
+compress ratio:1.07273
+-----------------------
+data_compress finish, time = 2.32
 
 #   case: c2670
-after compress vectors size: 151
+total fault: 6520
+origin vectors size: 287
+origin fault coverage: 93.8037%
+after compress vectors size: 143
 after compress coverage: 93.8037%
-data_compress finish, time = 66.814
+compress ratio:2.00699
+-----------------------
+data_compress finish, time = 71.603
 
 #   case: c3540
+total fault: 7910
+origin vectors size: 170
+origin fault coverage: 23.1732%
 after compress vectors size: 86
-after compress coverage: 23.1985%
-data_compress finish, time = 15.266
+after compress coverage: 23.1732%
+compress ratio:1.97674
+-----------------------
+data_compress finish, time = 15.557
 
 #   case: c6288
-after compress vectors size: 74
-after compress coverage: 97.6174%
-data_compress finish, time = 3.599
+total fault: 17376
+origin vectors size: 123
+origin fault coverage: 97.5886%
+after compress vectors size: 73
+after compress coverage: 97.5886%
+compress ratio:1.68493
+-----------------------
+data_compress finish, time = 4.329
 
 #   case: c7552
-after compress vectors size: 260
-after compress coverage: 98.1908%
-data_compress finish, time = 18.9
+total fault: 19456
+origin vectors size: 546
+origin fault coverage: 98.2319%
+after compress vectors size: 268
+after compress coverage: 98.2319%
+compress ratio:2.03731
+-----------------------
+data_compress finish, time = 18.561
+
+
+==========================================================================================
+==========================================================================================
+
+
+ndet = 8
+
+
+#   case: c17
+total fault: 34
+origin vectors size: 72
+origin fault coverage: 94.1176%
+after compress vectors size: 72
+after compress coverage: 94.1176%
+compress ratio:1
+-----------------------
+data_compress finish, time = 0.001
+
+#   case: c432.041
+total fault: 1110
+origin vectors size: 162
+origin fault coverage: 11.6216%
+after compress vectors size: 152
+after compress coverage: 11.6216%
+compress ratio:1.06579
+-----------------------
+data_compress finish, time = 0.114
+
+#   case: c499.234
+total fault: 2390
+origin vectors size: 912
+origin fault coverage: 95.6067%
+after compress vectors size: 419
+after compress coverage: 95.6067%
+compress ratio:2.17661
+-----------------------
+data_compress finish, time = 1.983
+
+#   case: c880.878
+total fault: 2104
+origin vectors size: 1075
+origin fault coverage: 50.3802%
+after compress vectors size: 533
+after compress coverage: 50.3802%
+compress ratio:2.01689
+-----------------------
+data_compress finish, time = 17.712
+
+#   case: c1355.956
+total fault: 2726
+origin vectors size: 528
+origin fault coverage: 38.4079%
+after compress vectors size: 424
+after compress coverage: 38.4079%
+compress ratio:1.24528
+-----------------------
+data_compress finish, time = 2.826
+
+#   case: c26700.063
+total fault: 6520
+origin vectors size: 2273
+origin fault coverage: 93.9264%
+after compress vectors size: 1124
+after compress coverage: 93.9264%
+compress ratio:2.02224
+-----------------------
+data_compress finish, time = 86.319
+
+#   case: c3540.81
+total fault: 7910
+origin vectors size: 1351
+origin fault coverage: 23.1732%
+after compress vectors size: 612
+after compress coverage: 23.1732%
+compress ratio:2.20752
+-----------------------
+data_compress finish, time = 20.06
+
+#   case: c62880.882
+total fault: 17376
+origin vectors size: 984
+origin fault coverage: 97.5886%
+after compress vectors size: 578
+after compress coverage: 97.5886%
+compress ratio:1.70242
+-----------------------
+data_compress finish, time = 24.4
+
+#   case: c75521.537
+total fault: 19456
+origin vectors size: 4335
+origin fault coverage: 98.2576%
+after compress vectors size: 1994
+after compress coverage: 98.2576%
+compress ratio:2.17402
+-----------------------
+data_compress finish, time = 100.562
 

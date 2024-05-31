@@ -31,7 +31,7 @@ void ATPG::test() {
     auto start = chrono::high_resolution_clock::now();
     pattern.resize(cktin.size()+1);
     // heuristics : random sim to detect some simple faults
-    int random_sim_num = num_of_tdf_fault * 10;
+    int random_sim_num = num_of_tdf_fault * 10 * detected_num;
     int random_sim_no_detect = 0;
     int random_sim_detect_num = 0;
     for (int i = 0; i < random_sim_num; ++i) {
@@ -39,16 +39,25 @@ void ATPG::test() {
         for (int j = 0; j < cktin.size() + 1; ++j) {
             vec += rand() % 2 ? '1' : '0';
         }
-        bool is_redundant;
-        tdfault_sim_a_vector(vec, current_detect_num, is_redundant);
-        if (current_detect_num != 0) {
+        bool is_redundant_vector = true;
+        tdfault_sim_a_vector(vec, current_detect_num, is_redundant_vector);
+        if (is_redundant_vector == false) {
             vectors.push_back(vec);
             random_sim_detect_num += current_detect_num;
-            current_detect_num = 0;
+            // heuristics : if we gen a good pattern, reuse it
+            for (int i = 1; i < detected_num; i++) {
+                bool is_redundant_vector = true;
+                tdfault_sim_a_vector(vec, current_detect_num, is_redundant_vector);
+                vectors.push_back(vec);
+                random_sim_detect_num += current_detect_num;
+                if (is_redundant_vector == true) {
+                    break;
+                }
+            }
         }
-        random_sim_no_detect = current_detect_num == 0 ? random_sim_no_detect + 1 : 0;
-        if (random_sim_no_detect > num_of_tdf_fault * 0.1) {
-            cerr << "Random simulation cannot detect any fault!" << endl;
+        random_sim_no_detect = (is_redundant_vector == true) ? (random_sim_no_detect + 1) : 0;
+        if (random_sim_no_detect > 100) {
+            cerr << "Random simulation cannot detect any fault! (" << i << ")" << endl;
             break;
         }
     }
@@ -60,19 +69,19 @@ void ATPG::test() {
     }
 
     SCOAP();
-    cerr<<"scoap finish, time = "<<(chrono::duration_cast<std::chrono::milliseconds>(chrono::high_resolution_clock::now() - start).count())/1000.0<<endl;
-    
+    cerr << "scoap finish, time = " << (chrono::duration_cast<std::chrono::milliseconds>(chrono::high_resolution_clock::now() - start).count()) / 1000.0 << endl;
+
     fault_ranking();
-    cerr<<"fault_ranking finish, time = "<<(chrono::duration_cast<std::chrono::milliseconds>(chrono::high_resolution_clock::now() - start).count())/1000.0<<endl;
+    cerr << "fault_ranking finish, time = " << (chrono::duration_cast<std::chrono::milliseconds>(chrono::high_resolution_clock::now() - start).count()) / 1000.0 << endl;
 
     fptr fault_under_test = sorted_flist.front();
     vector<fptr> second_target;
     vector<int> prev_pattern;
     int target_index, prev_detect;
     string vec;
-    bool redundant;
+    bool redundant = true;
     while((fault_under_test != nullptr) && (fault_under_test->rank >= 0)){
-        if(!fault_under_test->pattern.empty()){
+        if (!fault_under_test->pattern.empty()) {
             pattern = fault_under_test->pattern;
             if(podemx){
                 fail_count = 0;
@@ -107,23 +116,25 @@ void ATPG::test() {
                 // (2) =====================
                 vector<int> temp = pattern;
                 // heuristics : for a pattern with some PI unknown, we generate 3 vectors
-                for (int j = 0; j < 3; j++) {
+                for (int j = 0; j < detected_num + 4 - fault_under_test->detected_time; j++) {
                     for (int i = 0; i < temp.size(); i++) {
                         if (temp[i] == 2)
                             temp[i] = rand() % 2;
                         vec += itoc(temp[i]);
                     }
                     tdfault_sim_a_vector(vec, current_detect_num, redundant);
-                    assert(prev_detect != fault_under_test->detected_time);
+                    if (redundant == true) {
+                        break;
+                    }
                     vectors.push_back(vec);
                     in_vector_no++;
                     vec = "";
                     temp = pattern;
+                    redundant = true;
                 }
                 // =====================
             }
-        }
-        else{
+        } else {
             fault_under_test->detect = MAYBE;
             if(fault_under_test != sorted_flist.front()) throw std::runtime_error("podem fptr error!");
             flist_undetect.remove_if([&](fptr f) {
@@ -145,9 +156,10 @@ void ATPG::test() {
     }
     cerr<<"podemx finish, time = "<<(chrono::duration_cast<std::chrono::milliseconds>(chrono::high_resolution_clock::now() - start).count())/1000.0<<endl;
 
-    data_compress();
-    cerr<<"data_compress finish, time = "<<(chrono::duration_cast<std::chrono::milliseconds>(chrono::high_resolution_clock::now() - start).count())/1000.0<<endl;
-
+    if (data_compress_flag==true) {
+        data_compress();
+        cerr << "data_compress finish, time = " << (chrono::duration_cast<std::chrono::milliseconds>(chrono::high_resolution_clock::now() - start).count()) / 1000.0 << endl;
+    }
     for (int i = 0; i < vectors.size(); i++) {
         fprintf(stdout, "T\'");
         for (int j = 0; j < vectors[i].size() - 1; j++) {
@@ -534,7 +546,7 @@ void ATPG::fault_ranking(){
                 }
 
                 sorted_flist[i]->rank = fault_rank_pattern(vec);
-                if(sorted_flist[i]->detect == true){
+                if (sorted_flist[i]->detected_time != 0) {
                     sorted_flist[i]->pattern = pattern;
                     sorted_flist[i]->vec = vec;
                 }
