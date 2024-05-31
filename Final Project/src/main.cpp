@@ -13,17 +13,16 @@ int main(int argc, char *argv[]) {
   string inpFile, vetFile;
   int i, j;
   ATPG atpg; // create an ATPG obj, named atpg
-  bool DC_flag = false;
   atpg.timer(stdout, "START");
   atpg.detected_num = 1;
   i = 1;
-
+// –tdfatpg –compression
   /* parse the input switches & arguments */
   while (i < argc) {
     if (strcmp(argv[i], "-tdfatpg") == 0) {
       i++;
-    } else if (strcmp(argv[i], "-DC") == 0) {
-      DC_flag = true;
+    } else if (strcmp(argv[i], "-compression") == 0) {
+      atpg.use_data_compress();
       i++;
     }
       // for N-detect fault simulation
@@ -69,8 +68,8 @@ int main(int argc, char *argv[]) {
   atpg.generate_tdfault_list(); //init_flist.cpp
   atpg.timer(stdout, "for generating fault list");
 
-  atpg.init_reach();
-  atpg.timer(stdout, "for compute reachability");
+  // atpg.init_reach();
+  // atpg.timer(stdout, "for compute reachability");
 
   atpg.test(); //atpg.cpp
   atpg.timer(stdout, "for test pattern generation");

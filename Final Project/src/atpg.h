@@ -116,8 +116,10 @@ class ATPG {
   void tdfault_RVE_sim_a_vector2(const string &, int &);
   void tdfault_sim_a_vector_for_detect_once(const string &, int &);
   void tdfault_sim_a_vector2_for_detect_once(const string &, int &);
+  void use_data_compress(){data_compress_flag = true;}
 
  private:
+  bool data_compress_flag = false;
 
   /* alias declaration */
   class WIRE;

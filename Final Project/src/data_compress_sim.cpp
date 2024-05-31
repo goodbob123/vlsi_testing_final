@@ -40,7 +40,7 @@ void ATPG::tdfault_RVE_sim_a_vector(const string &vec, int &num_of_current_detec
 
 /* fault simulate a single test vector */
 void ATPG::tdfault_RVE_sim_a_vector2(const string &vec, int &num_of_current_detect) {
-    detected_num = 1;
+    int detected_num_one = 1;
     vector<fptr> effected_faults;
 
     wptr w, faulty_wire;
@@ -137,14 +137,14 @@ void ATPG::tdfault_RVE_sim_a_vector2(const string &vec, int &num_of_current_dete
                     // this pattern will find redundant fault, recover the fault list
                     for (int j = 0; j < effected_faults.size(); j++) {
                         effected_faults[j]->detected_time--;
-                        if (effected_faults[j]->detected_time < detected_num) {
+                        if (effected_faults[j]->detected_time < detected_num_one) {
                             effected_faults[j]->detect = false;
                         }
                     }
                     return;
                 }
                 f->detected_time++;
-                if (f->detected_time == detected_num) {
+                if (f->detected_time == detected_num_one) {
                     f->detect = TRUE;
                 }
                 effected_faults.push_back(f);
@@ -189,14 +189,14 @@ void ATPG::tdfault_RVE_sim_a_vector2(const string &vec, int &num_of_current_dete
                                 // this pattern will find redundant fault, recover the fault list
                                 for (int j = 0; j < effected_faults.size(); j++) {
                                     effected_faults[j]->detected_time--;
-                                    if (effected_faults[j]->detected_time < detected_num) {
+                                    if (effected_faults[j]->detected_time < detected_num_one) {
                                         effected_faults[j]->detect = false;
                                     }
                                 }
                                 return;
                             }
                             f->detected_time++;
-                            if (f->detected_time == detected_num) {
+                            if (f->detected_time == detected_num_one) {
                                 f->detect = TRUE;
                             }
                             effected_faults.push_back(f);
@@ -278,14 +278,14 @@ void ATPG::tdfault_RVE_sim_a_vector2(const string &vec, int &num_of_current_dete
                     // this pattern will find redundant fault, recover the fault list
                     for (int j = 0; j < effected_faults.size(); j++) {
                         effected_faults[j]->detected_time--;
-                        if (effected_faults[j]->detected_time < detected_num) {
+                        if (effected_faults[j]->detected_time < detected_num_one) {
                             effected_faults[j]->detect = false;
                         }
                     }
                     return;
                 }
                 simulated_fault_list[i]->detected_time++;
-                if (simulated_fault_list[i]->detected_time == detected_num) {
+                if (simulated_fault_list[i]->detected_time == detected_num_one) {
                     simulated_fault_list[i]->detect = TRUE;
                 }
                 effected_faults.push_back(simulated_fault_list[i]);
@@ -350,7 +350,7 @@ void ATPG::tdfault_sim_a_vector2_for_detect_once(const string &vec, int &num_of_
   int fault_type;
   int i, start_wire_index, nckt;
   int num_of_fault;
-
+ int detected_num_one =1;
   num_of_fault = 0; // counts the number of faults in a packet
 
   /* num_of_current_detect is used to keep track of the number of undetected
@@ -425,7 +425,7 @@ void ATPG::tdfault_sim_a_vector2_for_detect_once(const string &vec, int &num_of_
       if ((f->node->type == OUTPUT) ||
           (f->io == GO && sort_wlist[f->to_swlist]->is_output())) {
             f->detected_time++;
-            if (f->detected_time == detected_num) {
+            if (f->detected_time == detected_num_one) {
                 f->detect = TRUE;
             }
       } else {
@@ -470,7 +470,7 @@ void ATPG::tdfault_sim_a_vector2_for_detect_once(const string &vec, int &num_of_
             /* if the faulty_wire is a primary output, it is detected */
             if (faulty_wire->is_output()) {
               f->detected_time++;
-              if (f->detected_time == detected_num) {
+              if (f->detected_time == detected_num_one) {
                 f->detect = TRUE;
               }
             } else {
@@ -553,7 +553,7 @@ void ATPG::tdfault_sim_a_vector2_for_detect_once(const string &vec, int &num_of_
       for (i = 0; i < num_of_fault; i++) {
         if (fault_detected[i] == 1) {
           simulated_fault_list[i]->detected_time++;
-          if (simulated_fault_list[i]->detected_time == detected_num) {
+          if (simulated_fault_list[i]->detected_time == detected_num_one) {
             simulated_fault_list[i]->detect = TRUE;
           }
         }
