@@ -301,8 +301,10 @@ class ATPG {
             size_t rc_in = slot & mask;
             if (rc_in != 0)
               _size++;
-            if (rc_in == mask)
+            if (rc_in == mask) {
               _conflict = true;
+              _size++;
+            }
           }
         }
       }
