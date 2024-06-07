@@ -13,6 +13,7 @@ void ATPG::data_compress() {
     cerr << "[ Data compress start ]" << endl;
     int DC_choice = 1;
     bool sort_flag = false;
+    int no_improve_threshold = 5;
     srand(time(NULL));
     auto start = chrono::high_resolution_clock::now();
 
@@ -27,19 +28,11 @@ void ATPG::data_compress() {
         flist_undetect.push_front(f.get());
     }
 
-    // fill the X-, random gen
-    for (int i = 0; i < vectors.size(); ++i) {
-        for (int j = 0; j < vectors[i].size(); ++j) {
-            if (vectors[i][j] == '2') {
-                vectors[i][j] = (rand() % (2)) ? '0' : '1';
-            }
-        }
-    }
 
     // print settings
     cerr << "DC_choice: " << DC_choice << endl;
     cerr << "sort_flag: " << sort_flag << endl;
-
+    cerr << "no_improve_threshold: " << no_improve_threshold << endl;
 
     // Calc the origin fault coverage
     int current_detect_num = 0;
@@ -68,17 +61,17 @@ void ATPG::data_compress() {
     // (0) (optional) sort the fault list by detected faults num
     if (sort_flag) {
         cerr << "---- sort fault list -----" << endl;
-        unordered_map<string, int> pattern_score;
+        unordered_map<int, int> pattern_score;
         int max_score = 0;
-        for (auto &vector : vectors) {
-            get_pattern_score(vector, pattern_score[vector]);
+        for (int i = 0; i < vectors.size(); ++i) { 
+            get_pattern_score(vectors[i], pattern_score[i]);
             reset_flist_undetect();
-            max_score = max(max_score, pattern_score[vector]);
+            max_score = max(max_score, pattern_score[i]);
         }
         cerr << "max score: " << max_score << endl;
         vector<vector<string>> new_vectors(max_score + 1);
         for (auto &p : pattern_score) {
-            new_vectors[p.second].push_back(p.first);
+            new_vectors[p.second].push_back(vectors[p.first]);
         }
         vectors.clear();
         for (int i = 0; i <= max_score; ++i) {
@@ -116,7 +109,7 @@ void ATPG::data_compress() {
 
             // terminate condition
             no_improve = improved ? 0 : no_improve + 1;
-            if (no_improve >= 3) {
+            if (no_improve >= no_improve_threshold) {
                 break;
             }
             random_shuffle(vectors.begin(), vectors.end());
@@ -127,36 +120,48 @@ void ATPG::data_compress() {
     if (DC_choice == 2) {
         cerr << "---- RVE start -----" << endl;
         // (2) Redundant Vector Elimination (RVE)
-        reset_flist_undetect();
-        vector<string> _double_comfirm_vectors;
+        int no_improve = 0;
+        bool improved = false;
+        for (int ite = 0; ite < 100; ++ite) {
+            improved = false;
+            reset_flist_undetect();
+            vector<string> _double_comfirm_vectors;
 
-        // (2-1) collect the double comfirm vectors
-        // there are 2 traversing way, 0 -> size-1, size-1 ->0
-        total_detect_num = 0;
-        for (int i = 0; i < vectors.size(); i++) {
-            // if the vector detects redundant fault, then it is a double comfirm vector, temp remove it
-            tdfault_RVE_sim_a_vector(vectors[i], current_detect_num);
-            if (current_detect_num == 0) {
-                _double_comfirm_vectors.push_back(vectors[i]);
-                vectors.erase(vectors.begin() + i);
-                --i;
+            // (2-1) collect the double comfirm vectors
+            // there are 2 traversing way, 0 -> size-1, size-1 ->0
+            total_detect_num = 0;
+            for (int i = 0; i < vectors.size(); i++) {
+                // if the vector detects redundant fault, then it is a double comfirm vector, temp remove it
+                tdfault_RVE_sim_a_vector(vectors[i], current_detect_num);
+                if (current_detect_num == 0) {
+                    _double_comfirm_vectors.push_back(vectors[i]);
+                    vectors.erase(vectors.begin() + i);
+                    --i;
+                }
+                total_detect_num += current_detect_num;
             }
-            total_detect_num += current_detect_num;
-        }
-        cerr << "double comfirm vectors size: " << _double_comfirm_vectors.size() << endl;
+            // cerr << "double comfirm vectors size: " << _double_comfirm_vectors.size() << endl;
 
-        // (2-2) check the double comfirm vectors, let fault coverage increase
-        for (int i = _double_comfirm_vectors.size() - 1; i >= 0; --i) {
-            bool is_redundant_vector = true;
-            tdfault_sim_a_vector(_double_comfirm_vectors[i], current_detect_num, is_redundant_vector);
-            if (current_detect_num == 0) {
-                continue;
+            // (2-2) check the double comfirm vectors, let fault coverage increase
+            for (int i = _double_comfirm_vectors.size() - 1; i >= 0; --i) {
+                bool is_redundant_vector = true;
+                tdfault_sim_a_vector(_double_comfirm_vectors[i], current_detect_num, is_redundant_vector);
+                if (is_redundant_vector == true) {
+                    continue;
+                }
+                vectors.push_back(_double_comfirm_vectors[i]);
+                total_detect_num += current_detect_num;
+                if (total_detect_num == origin_detect_num) {
+                    // cerr << "double comfirm vectors check finish" << endl;
+                    break;
+                }
             }
-            vectors.push_back(_double_comfirm_vectors[i]);
-            total_detect_num += current_detect_num;
-            if (total_detect_num == origin_detect_num) {
+            // terminate condition
+            no_improve = improved ? 0 : no_improve + 1;
+            if (no_improve >= no_improve_threshold) {
                 break;
             }
+            random_shuffle(vectors.begin(), vectors.end());
         }
     }
     // for print result

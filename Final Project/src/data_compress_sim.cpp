@@ -40,7 +40,6 @@ void ATPG::tdfault_RVE_sim_a_vector(const string &vec, int &num_of_current_detec
 
 /* fault simulate a single test vector */
 void ATPG::tdfault_RVE_sim_a_vector2(const string &vec, int &num_of_current_detect) {
-    int detected_num_one = 1;
     vector<fptr> effected_faults;
 
     wptr w, faulty_wire;
@@ -125,11 +124,12 @@ void ATPG::tdfault_RVE_sim_a_vector2(const string &vec, int &num_of_current_dete
              * the fault is detected */
             if ((f->node->type == OUTPUT) ||
                 (f->io == GO && sort_wlist[f->to_swlist]->is_output())) {
-                bool redundant = true;
-                for (auto pos = flist_undetect.cbegin(); pos != flist_undetect.cend(); ++pos) {
+                bool redundant = false;
+                // for (auto pos = flist_undetect.cbegin(); pos != flist_undetect.cend(); ++pos) {
+                for (const auto &pos1 : flist) {
                     // for(int k=0;k<flist_undetect.size();k++){
-                    if ((*pos)->fault_no == f->fault_no) {
-                        redundant = false;
+                    if ((pos1.get())->fault_no == f->fault_no) {
+                        redundant = true;
                         break;
                     }
                 }
@@ -137,14 +137,14 @@ void ATPG::tdfault_RVE_sim_a_vector2(const string &vec, int &num_of_current_dete
                     // this pattern will find redundant fault, recover the fault list
                     for (int j = 0; j < effected_faults.size(); j++) {
                         effected_faults[j]->detected_time--;
-                        if (effected_faults[j]->detected_time < detected_num_one) {
+                        if (effected_faults[j]->detected_time < detected_num) {
                             effected_faults[j]->detect = false;
                         }
                     }
                     return;
                 }
                 f->detected_time++;
-                if (f->detected_time == detected_num_one) {
+                if (f->detected_time == detected_num) {
                     f->detect = TRUE;
                 }
                 effected_faults.push_back(f);
@@ -177,11 +177,12 @@ void ATPG::tdfault_RVE_sim_a_vector2(const string &vec, int &num_of_current_dete
                     if (faulty_wire != nullptr) {
                         /* if the faulty_wire is a primary output, it is detected */
                         if (faulty_wire->is_output()) {
-                            bool redundant = true;
-                            for (auto pos = flist_undetect.cbegin(); pos != flist_undetect.cend(); ++pos) {
+                            bool redundant = false;
+                            // for (auto pos = flist_undetect.cbegin(); pos != flist_undetect.cend(); ++pos) {
+                            for (const auto &pos1 : flist) {
                                 // for(int k=0;k<flist_undetect.size();k++){
-                                if ((*pos)->fault_no == f->fault_no) {
-                                    redundant = false;
+                                if ((pos1.get())->fault_no == f->fault_no) {
+                                    redundant = true;
                                     break;
                                 }
                             }
@@ -189,14 +190,14 @@ void ATPG::tdfault_RVE_sim_a_vector2(const string &vec, int &num_of_current_dete
                                 // this pattern will find redundant fault, recover the fault list
                                 for (int j = 0; j < effected_faults.size(); j++) {
                                     effected_faults[j]->detected_time--;
-                                    if (effected_faults[j]->detected_time < detected_num_one) {
+                                    if (effected_faults[j]->detected_time < detected_num) {
                                         effected_faults[j]->detect = false;
                                     }
                                 }
                                 return;
                             }
                             f->detected_time++;
-                            if (f->detected_time == detected_num_one) {
+                            if (f->detected_time == detected_num) {
                                 f->detect = TRUE;
                             }
                             effected_faults.push_back(f);
@@ -266,11 +267,12 @@ void ATPG::tdfault_RVE_sim_a_vector2(const string &vec, int &num_of_current_dete
             }  // pop out all faulty wires
             for (i = 0; i < num_of_fault; i++) {
                 // ******** here will be N-det ********
-                bool redundant = true;
-                for (auto pos = flist_undetect.cbegin(); pos != flist_undetect.cend(); ++pos) {
+                bool redundant = false;
+                // for (auto pos = flist_undetect.cbegin(); pos != flist_undetect.cend(); ++pos) {
+                for (const auto &pos1 : flist) {
                     // for(int k=0;k<flist_undetect.size();k++){
-                    if ((*pos)->fault_no == f->fault_no) {
-                        redundant = false;
+                    if ((pos1.get())->fault_no == simulated_fault_list[i]->fault_no) {
+                        redundant = true;
                         break;
                     }
                 }
@@ -278,14 +280,14 @@ void ATPG::tdfault_RVE_sim_a_vector2(const string &vec, int &num_of_current_dete
                     // this pattern will find redundant fault, recover the fault list
                     for (int j = 0; j < effected_faults.size(); j++) {
                         effected_faults[j]->detected_time--;
-                        if (effected_faults[j]->detected_time < detected_num_one) {
+                        if (effected_faults[j]->detected_time < detected_num) {
                             effected_faults[j]->detect = false;
                         }
                     }
                     return;
                 }
                 simulated_fault_list[i]->detected_time++;
-                if (simulated_fault_list[i]->detected_time == detected_num_one) {
+                if (simulated_fault_list[i]->detected_time == detected_num) {
                     simulated_fault_list[i]->detect = TRUE;
                 }
                 effected_faults.push_back(simulated_fault_list[i]);
