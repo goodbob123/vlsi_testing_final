@@ -538,6 +538,57 @@ void ATPG::fault_ranking(){
         reset_pattern();
         string vec = "";
         int temp = 0;
+
+        if (!sorted_flist[i]->det->is_conflict()) {
+            string v = "";
+            auto f = sorted_flist[i];
+            auto fr = sorted_flist[i]->det;
+            for (int i = 0; i < cktin.size(); i++) {
+                v += fr->get_val(i);
+                // pattern[i] = ctoi(itoc(pattern[i]));
+            }
+
+            for (i = 0; i < cktin.size(); i++) {
+                cktin[i]->value = ctoi(v[i]);
+            }
+
+            for (i = 0; i < sort_wlist.size(); i++) {
+                if (i < cktin.size()) {
+                    sort_wlist[i]->set_changed();
+                } else {
+                    sort_wlist[i]->value = U;
+                }
+            }
+
+            sim();
+            assert(f->fault_type == sort_wlist[f->to_swlist]->value);
+
+            v = "";
+            v += fr->get_val(cktin.size());
+            for (int i = 1; i < cktin.size(); i++) {
+                v += fr->get_val(i - 1);
+                // pattern[i] = ctoi(itoc(pattern[i]));
+            }
+            for (i = 0; i < cktin.size(); i++) {
+                cktin[i]->value = ctoi(v[i]);
+            }
+            for (i = 0; i < sort_wlist.size(); i++) {
+                if (i < cktin.size()) {
+                    sort_wlist[i]->set_changed();
+                } else {
+                    sort_wlist[i]->value = U;
+                }
+            }
+
+            sim();
+            assert(f->fault_type != sort_wlist[f->to_swlist]->value);
+
+            for (i = 0; i < sort_wlist.size(); i++) {
+                sort_wlist[i]->value = U;
+                sort_wlist[i]->remove_changed();
+            }
+        }
+        
         switch (podem(sorted_flist[i], temp, 0)) {
             case TRUE:
                 for (int i = 0; i < pattern.size(); i++) {

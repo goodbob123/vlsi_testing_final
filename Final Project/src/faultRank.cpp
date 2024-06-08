@@ -15,8 +15,6 @@ void ATPG::init_reach() {
 
     for (size_t i = 0; i < sort_wlist.size(); i++) {
         wptr w = sort_wlist[i];
-        // if (w->inode.size() == 0)
-        //     cerr << "???" << endl;
         nptr n = w->inode[0];
         if (n->type == INPUT) continue; // input rc is done
 
@@ -106,68 +104,53 @@ void ATPG::init_reach() {
             case OUTPUT: // can't be input of some node
             case INPUT: // done
                 assert(false);
-                cout << "sth wrong" << endl;
+                // cout << "sth wrong" << endl;
                 break;
         }
         w->backup_rc(); // branch has same rc as stem
     }
 
-    for (size_t i = 0; i < cktout.size(); i++) {
-        wptr po = cktout[i];
-        po->_ro.push_back(new REACH(num_in)); // ro of po is empty set
-        po->_ro.push_back(po->_ro[0]); // for output node (though probably no use)
-    }
-
     for (int i = sort_wlist.size() - 1; i >= 0; i--) {
-        cout << i << endl;
         wptr& w = sort_wlist[i];
-        // if (w->onode.size() == 0)
-        //     cerr << "???" << endl;
-        if (w->onode[0]->type == OUTPUT) continue;
         w->_ro.push_back(0); // remain a place for in-wire RO
         rptr best_ro = 0;
-        // w ------ n 
-        // w_fic -/
+
         for (nptr& n : w->onode) {
-            // if (n->type == OUTPUT) continue; // done
             rptr cur_ro = new REACH(num_in);
             w->_ro.push_back(cur_ro);
-            // if (n->iwire.size() == 0 || n->owire.size() == 0)
-            //     cerr << "???" << endl;
+            if (n->type != OUTPUT) { // ro of po is empty set
+                wptr w_fic = n->iwire.size() < 2 ? 0 : n->iwire[0] == w ? n->iwire[1] : n->iwire[0];
+                rptr rc0_fic = w_fic == 0 ? 0 : w_fic->_rc0[w_fic->get_reach_id(n)];
+                rptr rc1_fic = w_fic == 0 ? 0 : w_fic->_rc1[w_fic->get_reach_id(n)];
 
-            wptr w_fic = n->iwire.size() < 2 ? 0 : n->iwire[0] == w ? n->iwire[1] : n->iwire[0];
-            rptr rc0_fic = w_fic == 0 ? 0 : w_fic->_rc0[w_fic->get_reach_id(n)];
-            rptr rc1_fic = w_fic == 0 ? 0 : w_fic->_rc1[w_fic->get_reach_id(n)];
-
-            wptr w_fo = n->owire[0];
-            rptr ro_fo = w_fo->_ro[w_fo->get_reach_id(n)];
-            switch (n->type) {
-                case NAND:
-                case AND:
-                    *cur_ro |= ro_fo->getV1();
-                    if (w_fic != 0) *cur_ro |= rc1_fic->getV1();
-                    break;
-                case NOR:
-                case OR:
-                    *cur_ro |= ro_fo->getV1();
-                    if (w_fic != 0) *cur_ro |= rc0_fic->getV1();
-                    break;
-                case BUF:
-                case NOT:
-                    *cur_ro |= ro_fo->getV1();
-                    break;
-                case XOR:
-                case EQV:
-                    *cur_ro |= ro_fo->getV1();
-                    if (w_fic != 0) *cur_ro |= (rc0_fic->size() < rc1_fic->size() ? rc0_fic->getV1() : rc1_fic->getV1());
-                    break;
-                case OUTPUT: // done
-                case INPUT: // should not be some node's output
-                    assert(false);
-                    cout << "sth wrong" << endl;
-                    break; // done in previous
+                wptr w_fo = n->owire[0];
+                rptr ro_fo = w_fo->_ro[w_fo->get_reach_id(n)];
+                switch (n->type) {
+                    case NAND:
+                    case AND:
+                        *cur_ro |= ro_fo->getV1();
+                        if (w_fic != 0) *cur_ro |= rc1_fic->getV1();
+                        break;
+                    case NOR:
+                    case OR:
+                        *cur_ro |= ro_fo->getV1();
+                        if (w_fic != 0) *cur_ro |= rc0_fic->getV1();
+                        break;
+                    case BUF:
+                    case NOT:
+                        *cur_ro |= ro_fo->getV1();
+                        break;
+                    case XOR:
+                    case EQV:
+                        *cur_ro |= ro_fo->getV1();
+                        if (w_fic != 0) *cur_ro |= (rc0_fic->size() < rc1_fic->size() ? rc0_fic->getV1() : rc1_fic->getV1());
+                        break;
+                    case OUTPUT: // done
+                    case INPUT: // should not be some node's output
+                        assert(false);
+                        break; // done in previous
+                }
             }
-            // smallest ro picked for stem
             if (best_ro == 0 || cur_ro->size() < best_ro->size()) best_ro = cur_ro;
         }
         // if (best_ro == 0)
@@ -177,15 +160,24 @@ void ATPG::init_reach() {
     for (auto& f: flist) {
         f->get_det();
     }
-
-    for (auto& w: sort_wlist) {
-        cout << w->name << endl;
-        cout << "rc0 ";
-        w->_rc0[0]->print();
-        cout << "rc1 ";
-        w->_rc1[0]->print();
-        cout << "ro: "<< endl;
-        for (auto ro: w->_ro) ro->print();
-    }
-    // compute rc, ro step by step
 }
+
+//     vector<ATPG::wptr> scoap_wlist(sort_wlist);
+//     sort(scoap_wlist.begin(), scoap_wlist.end(), [](wptr a, wptr b) {
+//         return (a->_ro[0]->size() < b->_ro[0]->size()) || ((a->_ro[0]->size() == b->_ro[0]->size()) && (a->level > b->level));
+//     });
+
+//     for(fptr f : sorted_flist){
+//         int f_cc, f_co;
+//         if(f->fault_type == 0) f_cc = sort_wlist[f->to_swlist]->_rc1[0]->size();
+//         else f_cc = sort_wlist[f->to_swlist]->_rc0[0]->size();
+
+        
+//         for(int i = 0; i < sort_wlist[f->to_swlist]->onode.size(); i++){
+//             if(f->node == sort_wlist[f->to_swlist]->onode[i])
+//                 f_co = sort_wlist[f->to_swlist]->_ro[i]->size();
+//         }
+
+//         // f->scoap = f_cc * f_co;
+//         f->scoap = f->det->size();
+//     }

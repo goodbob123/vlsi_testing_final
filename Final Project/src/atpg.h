@@ -262,7 +262,7 @@ class ATPG {
     public:
       REACH(size_t num_in) {
         _num_in = num_in + 1;                                     // +1 for V2
-        _reach = vector<unsigned int>(((_num_in - 1) / 16) + 1, 0); // _n = 1~16 -> 1
+        _reach = vector<int>(((_num_in - 1) / 16) + 1, 0); // _n = 1~16 -> 1
         set_uncompute();
       }
 
@@ -287,6 +287,16 @@ class ATPG {
             cout << i << " ";
         }
         cout << endl;
+      }
+      vector<int> get_reach() { return _reach; }
+      string get_val(size_t i) {
+        auto &slot = _reach[i / 16];
+        unsigned int mask0 = 1 << (2 * (i % 16));
+        unsigned int mask1 = 1 << (2 * (i % 16) + 1);
+        // cout << (slot & mask0) << " " <<  (slot & mask1) << endl;
+        if ((slot & mask0) != 0 && (slot & mask1) == 0) return "0";
+        else if ((slot & mask0) == 0 && (slot & mask1) != 0) return "1";
+        else return "2";
       }
 
       void set_uncompute() {
@@ -354,7 +364,7 @@ class ATPG {
       bool _conflict;
       int _size;
       size_t _num_in;
-      vector<unsigned int> _reach;
+      vector<int> _reach;
   };
   /* declaration of WIRE, NODE, and FAULT classes */
   /* in our model, a wire has inputs (inode) and outputs (onode) */

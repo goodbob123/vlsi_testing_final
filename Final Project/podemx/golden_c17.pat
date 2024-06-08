@@ -10,11 +10,14 @@
 #atpg: cputime for rearranging gate inputs ./sample_circuits/c17.ckt: 0.0s 0.0s
 #atpg: cputime for creating dummy nodes ./sample_circuits/c17.ckt: 0.0s 0.0s
 #atpg: cputime for generating fault list ./sample_circuits/c17.ckt: 0.0s 0.0s
-vector[5] detects 11 faults (11)
-vector[4] detects 5 faults (16)
-vector[3] detects 5 faults (21)
-vector[2] detects 6 faults (27)
-vector[1] detects 4 faults (31)
+vector[8] detects 5 faults (5)
+vector[7] detects 3 faults (8)
+vector[6] detects 1 faults (9)
+vector[5] detects 5 faults (14)
+vector[4] detects 1 faults (15)
+vector[3] detects 6 faults (21)
+vector[2] detects 5 faults (26)
+vector[1] detects 5 faults (31)
 vector[0] detects 1 faults (32)
 
 # Result:
