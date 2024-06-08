@@ -231,6 +231,8 @@ class ATPG {
   //flag
   int podemx;
   int scoap;
+  bool reach_vec;
+  bool reach_cc;
   vector<ATPG::wptr> scoap_wlist;
 
 
@@ -289,14 +291,14 @@ class ATPG {
         cout << endl;
       }
       vector<int> get_reach() { return _reach; }
-      string get_val(size_t i) {
+      int get_val(size_t i) {
         auto &slot = _reach[i / 16];
         unsigned int mask0 = 1 << (2 * (i % 16));
         unsigned int mask1 = 1 << (2 * (i % 16) + 1);
         // cout << (slot & mask0) << " " <<  (slot & mask1) << endl;
-        if ((slot & mask0) != 0 && (slot & mask1) == 0) return "0";
-        else if ((slot & mask0) == 0 && (slot & mask1) != 0) return "1";
-        else return "2";
+        if ((slot & mask0) != 0 && (slot & mask1) == 0) return 0;
+        else if ((slot & mask0) == 0 && (slot & mask1) != 0) return 1;
+        else return 2;
       }
 
       void set_uncompute() {

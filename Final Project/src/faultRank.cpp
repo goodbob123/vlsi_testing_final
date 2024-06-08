@@ -162,22 +162,70 @@ void ATPG::init_reach() {
     }
 }
 
-//     vector<ATPG::wptr> scoap_wlist(sort_wlist);
-//     sort(scoap_wlist.begin(), scoap_wlist.end(), [](wptr a, wptr b) {
-//         return (a->_ro[0]->size() < b->_ro[0]->size()) || ((a->_ro[0]->size() == b->_ro[0]->size()) && (a->level > b->level));
-//     });
+    // vector<ATPG::wptr> scoap_wlist(sort_wlist);
+    // sort(scoap_wlist.begin(), scoap_wlist.end(), [](wptr a, wptr b) {
+    //     return (a->_ro[0]->size() < b->_ro[0]->size()) || ((a->_ro[0]->size() == b->_ro[0]->size()) && (a->level > b->level));
+    // });
 
-//     for(fptr f : sorted_flist){
-//         int f_cc, f_co;
-//         if(f->fault_type == 0) f_cc = sort_wlist[f->to_swlist]->_rc1[0]->size();
-//         else f_cc = sort_wlist[f->to_swlist]->_rc0[0]->size();
+    // for(fptr f : sorted_flist){
+    //     int f_cc, f_co;
+    //     if(f->fault_type == 0) f_cc = sort_wlist[f->to_swlist]->_rc1[0]->size();
+    //     else f_cc = sort_wlist[f->to_swlist]->_rc0[0]->size();
 
         
-//         for(int i = 0; i < sort_wlist[f->to_swlist]->onode.size(); i++){
-//             if(f->node == sort_wlist[f->to_swlist]->onode[i])
-//                 f_co = sort_wlist[f->to_swlist]->_ro[i]->size();
-//         }
+    //     for(int i = 0; i < sort_wlist[f->to_swlist]->onode.size(); i++){
+    //         if(f->node == sort_wlist[f->to_swlist]->onode[i])
+    //             f_co = sort_wlist[f->to_swlist]->_ro[i]->size();
+    //     }
 
-//         // f->scoap = f_cc * f_co;
-//         f->scoap = f->det->size();
-//     }
+    //     // f->scoap = f_cc * f_co;
+    //     f->scoap = f->det->size();
+    // }
+
+// string v = "";
+//             auto f = sorted_flist[i];
+//             auto fr = sorted_flist[i]->det;
+//             for (int i = 0; i < cktin.size(); i++) {
+//                 v += fr->get_val(i);
+//                 // pattern[i] = ctoi(itoc(pattern[i]));
+//             }
+
+//             for (i = 0; i < cktin.size(); i++) {
+//                 cktin[i]->value = ctoi(v[i]);
+//             }
+
+//             for (i = 0; i < sort_wlist.size(); i++) {
+//                 if (i < cktin.size()) {
+//                     sort_wlist[i]->set_changed();
+//                 } else {
+//                     sort_wlist[i]->value = U;
+//                 }
+//             }
+
+//             sim();
+//             assert(f->fault_type == sort_wlist[f->to_swlist]->value);
+
+//             v = "";
+//             v += fr->get_val(cktin.size());
+//             for (int i = 1; i < cktin.size(); i++) {
+//                 v += fr->get_val(i - 1);
+//                 // pattern[i] = ctoi(itoc(pattern[i]));
+//             }
+//             for (i = 0; i < cktin.size(); i++) {
+//                 cktin[i]->value = ctoi(v[i]);
+//             }
+//             for (i = 0; i < sort_wlist.size(); i++) {
+//                 if (i < cktin.size()) {
+//                     sort_wlist[i]->set_changed();
+//                 } else {
+//                     sort_wlist[i]->value = U;
+//                 }
+//             }
+
+//             sim();
+//             assert(f->fault_type != sort_wlist[f->to_swlist]->value);
+
+//             for (i = 0; i < sort_wlist.size(); i++) {
+//                 sort_wlist[i]->value = U;
+//                 sort_wlist[i]->remove_changed();
+//             }
