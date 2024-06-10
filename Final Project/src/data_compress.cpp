@@ -12,7 +12,7 @@ void ATPG::data_compress() {
     cerr << "-----------------------" << endl;
     cerr << "[ Data compress start ]" << endl;
     int DC_choice = 1;
-    bool sort_flag = false;
+    bool sort_flag = true;
     int no_improve_threshold = 5;
     srand(time(NULL));
     auto start = chrono::high_resolution_clock::now();
@@ -169,6 +169,7 @@ void ATPG::data_compress() {
     cerr << "origin vectors size: " << origin_vector_size << endl;
     cerr << "origin fault coverage: " << origin_fault_coverage << "%" << endl;
     cerr << "after compress vectors size: " << vectors.size() << endl;
+    cerr << "total_detect_num: " << total_detect_num << endl;
     cerr << "after compress coverage: " << (double)total_detect_num / (double)num_of_tdf_fault * 100 << "%" << endl;
     cerr << "compress ratio:" << (double)origin_vector_size / (double)vectors.size() << endl;
 

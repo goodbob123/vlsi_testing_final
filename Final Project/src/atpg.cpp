@@ -31,39 +31,39 @@ void ATPG::test() {
     auto start = chrono::high_resolution_clock::now();
     pattern.resize(cktin.size()+1);
     // heuristics : random sim to detect some simple faults
-    int random_sim_num = num_of_tdf_fault * 10 * detected_num;
-    int random_sim_no_detect = 0;
-    int random_sim_detect_num = 0;
-    for (int i = 0; i < random_sim_num; ++i) {
-        string vec = "";
-        for (int j = 0; j < cktin.size() + 1; ++j) {
-            vec += rand() % 2 ? '1' : '0';
-        }
-        bool is_redundant_vector = true;
-        tdfault_sim_a_vector(vec, current_detect_num, is_redundant_vector);
-        if (is_redundant_vector == false) {
-            vectors.push_back(vec);
-            random_sim_detect_num += current_detect_num;
-            // heuristics : if we gen a good pattern, reuse it
-            for (int i = 1; i < detected_num; i++) {
-                bool is_redundant_vector = true;
-                tdfault_sim_a_vector(vec, current_detect_num, is_redundant_vector);
-                vectors.push_back(vec);
-                random_sim_detect_num += current_detect_num;
-                if (is_redundant_vector == true) {
-                    break;
-                }
-            }
-        }
-        random_sim_no_detect = (is_redundant_vector == true) ? (random_sim_no_detect + 1) : 0;
-        if (random_sim_no_detect > 100) {
-            cerr << "Random simulation cannot detect any fault! (" << i << ")" << endl;
-            break;
-        }
-    }
-    cerr << "total tdfault = " << num_of_tdf_fault << endl;
-    cerr << "random sim detect num = " << random_sim_detect_num << endl;
-    cerr << "random sim finish, time = " << (chrono::duration_cast<std::chrono::milliseconds>(chrono::high_resolution_clock::now() - start).count()) / 1000.0 << endl;
+    // int random_sim_num = num_of_tdf_fault * 10 * detected_num;
+    // int random_sim_no_detect = 0;
+    // int random_sim_detect_num = 0;
+    // for (int i = 0; i < random_sim_num; ++i) {
+    //     string vec = "";
+    //     for (int j = 0; j < cktin.size() + 1; ++j) {
+    //         vec += rand() % 2 ? '1' : '0';
+    //     }
+    //     bool is_redundant_vector = true;
+    //     tdfault_sim_a_vector(vec, current_detect_num, is_redundant_vector);
+    //     if (is_redundant_vector == false) {
+    //         vectors.push_back(vec);
+    //         random_sim_detect_num += current_detect_num;
+    //         // heuristics : if we gen a good pattern, reuse it
+    //         for (int i = 1; i < detected_num; i++) {
+    //             bool is_redundant_vector = true;
+    //             tdfault_sim_a_vector(vec, current_detect_num, is_redundant_vector);
+    //             vectors.push_back(vec);
+    //             random_sim_detect_num += current_detect_num;
+    //             if (is_redundant_vector == true) {
+    //                 break;
+    //             }
+    //         }
+    //     }
+    //     random_sim_no_detect = (is_redundant_vector == true) ? (random_sim_no_detect + 1) : 0;
+    //     if (random_sim_no_detect > 100) {
+    //         cerr << "Random simulation cannot detect any fault! (" << i << ")" << endl;
+    //         break;
+    //     }
+    // }
+    // cerr << "total tdfault = " << num_of_tdf_fault << endl;
+    // cerr << "random sim detect num = " << random_sim_detect_num << endl;
+    // cerr << "random sim finish, time = " << (chrono::duration_cast<std::chrono::milliseconds>(chrono::high_resolution_clock::now() - start).count()) / 1000.0 << endl;
     for(fptr f : flist_undetect){
         sorted_flist.push_back(f);
     }
