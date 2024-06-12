@@ -1,0 +1,253 @@
+
+#   case: c17
+Random simulation cannot detect any fault! (140)
+total tdfault = 34
+random sim detect num = 32
+random sim finish, time = 0
+scoap finish, time = 0
+fault_ranking finish, time = 0
+podemx finish, time = 0
+-----------------------
+[ Data compress start ]
+DC_choice: 1
+sort_flag: 0
+no_improve_threshold: 5
+---- ROFS start -----
+ROFS finish, time = 0.001
+total fault: 34
+origin vectors size: 72
+origin fault coverage: 94.1176%
+after compress vectors size: 72
+total_detect_num: 32
+after compress coverage: 94.1176%
+compress ratio:1
+-----------------------
+data_compress finish, time = 0.002
+
+real	0m0.011s
+user	0m0.003s
+sys	0m0.000s
+#   case: c432
+Random simulation cannot detect any fault! (100)
+total tdfault = 1110
+random sim detect num = 0
+random sim finish, time = 0.007
+scoap finish, time = 0.008
+fault_ranking finish, time = 0.044
+podemx finish, time = 0.071
+-----------------------
+[ Data compress start ]
+DC_choice: 1
+sort_flag: 0
+no_improve_threshold: 5
+---- ROFS start -----
+ROFS finish, time = 0.054
+total fault: 1110
+origin vectors size: 162
+origin fault coverage: 11.6216%
+after compress vectors size: 152
+total_detect_num: 129
+after compress coverage: 11.6216%
+compress ratio:1.06579
+-----------------------
+data_compress finish, time = 0.126
+
+real	0m0.131s
+user	0m0.129s
+sys	0m0.000s
+#   case: c499
+Random simulation cannot detect any fault! (744)
+total tdfault = 2390
+random sim detect num = 2272
+random sim finish, time = 0.162
+scoap finish, time = 0.163
+fault_ranking finish, time = 0.729
+podemx finish, time = 0.73
+-----------------------
+[ Data compress start ]
+DC_choice: 1
+sort_flag: 0
+no_improve_threshold: 5
+---- ROFS start -----
+ROFS finish, time = 1.631
+total fault: 2390
+origin vectors size: 912
+origin fault coverage: 95.6067%
+after compress vectors size: 421
+total_detect_num: 2285
+after compress coverage: 95.6067%
+compress ratio:2.16627
+-----------------------
+data_compress finish, time = 2.362
+
+real	0m2.370s
+user	0m2.367s
+sys	0m0.000s
+#   case: c880
+Random simulation cannot detect any fault! (715)
+total tdfault = 2104
+random sim detect num = 973
+random sim finish, time = 0.176
+scoap finish, time = 0.176
+fault_ranking finish, time = 16.062
+podemx finish, time = 16.161
+-----------------------
+[ Data compress start ]
+DC_choice: 1
+sort_flag: 0
+no_improve_threshold: 5
+---- ROFS start -----
+ROFS finish, time = 1.287
+total fault: 2104
+origin vectors size: 1075
+origin fault coverage: 50.3802%
+after compress vectors size: 535
+total_detect_num: 1060
+after compress coverage: 50.3802%
+compress ratio:2.00935
+-----------------------
+data_compress finish, time = 17.449
+
+real	0m17.459s
+user	0m17.453s
+sys	0m0.000s
+#   case: c1355
+Random simulation cannot detect any fault! (100)
+total tdfault = 2726
+random sim detect num = 0
+random sim finish, time = 0.016
+scoap finish, time = 0.016
+fault_ranking finish, time = 1.628
+podemx finish, time = 1.773
+-----------------------
+[ Data compress start ]
+DC_choice: 1
+sort_flag: 0
+no_improve_threshold: 5
+---- ROFS start -----
+ROFS finish, time = 1.319
+total fault: 2726
+origin vectors size: 528
+origin fault coverage: 38.4079%
+after compress vectors size: 423
+total_detect_num: 1047
+after compress coverage: 38.4079%
+compress ratio:1.24823
+-----------------------
+data_compress finish, time = 3.093
+
+real	0m3.102s
+user	0m3.091s
+sys	0m0.008s
+#   case: c2670
+Random simulation cannot detect any fault! (877)
+total tdfault = 6520
+random sim detect num = 5185
+random sim finish, time = 0.875
+scoap finish, time = 0.877
+fault_ranking finish, time = 26.76
+podemx finish, time = 72.831
+-----------------------
+[ Data compress start ]
+DC_choice: 1
+sort_flag: 0
+no_improve_threshold: 5
+---- ROFS start -----
+ROFS finish, time = 11.391
+total fault: 6520
+origin vectors size: 2273
+origin fault coverage: 93.9264%
+after compress vectors size: 1124
+total_detect_num: 6124
+after compress coverage: 93.9264%
+compress ratio:2.02224
+-----------------------
+data_compress finish, time = 84.222
+
+real	1m24.257s
+user	1m24.233s
+sys	0m0.000s
+#   case: c3540
+Random simulation cannot detect any fault! (1326)
+total tdfault = 7910
+random sim detect num = 1543
+random sim finish, time = 1.415
+scoap finish, time = 1.417
+fault_ranking finish, time = 14.437
+podemx finish, time = 15.194
+-----------------------
+[ Data compress start ]
+DC_choice: 1
+sort_flag: 0
+no_improve_threshold: 5
+---- ROFS start -----
+ROFS finish, time = 5.758
+total fault: 7910
+origin vectors size: 1351
+origin fault coverage: 23.1732%
+after compress vectors size: 610
+total_detect_num: 1833
+after compress coverage: 23.1732%
+compress ratio:2.21475
+-----------------------
+data_compress finish, time = 20.952
+
+real	0m20.978s
+user	0m20.964s
+sys	0m0.008s
+#   case: c6288
+Random simulation cannot detect any fault! (360)
+total tdfault = 17376
+random sim detect num = 16957
+random sim finish, time = 1.37
+scoap finish, time = 1.373
+fault_ranking finish, time = 3.27
+podemx finish, time = 3.27
+-----------------------
+[ Data compress start ]
+DC_choice: 1
+sort_flag: 0
+no_improve_threshold: 5
+---- ROFS start -----
+ROFS finish, time = 39.558
+total fault: 17376
+origin vectors size: 984
+origin fault coverage: 97.5886%
+after compress vectors size: 576
+total_detect_num: 16957
+after compress coverage: 97.5886%
+compress ratio:1.70833
+-----------------------
+data_compress finish, time = 42.828
+
+real	0m42.957s
+user	0m42.948s
+sys	0m0.004s
+#   case: c7552
+Random simulation cannot detect any fault! (2768)
+total tdfault = 19456
+random sim detect num = 18040
+random sim finish, time = 6.072
+scoap finish, time = 6.077
+fault_ranking finish, time = 11.112
+podemx finish, time = 17.526
+-----------------------
+[ Data compress start ]
+DC_choice: 1
+sort_flag: 0
+no_improve_threshold: 5
+---- ROFS start -----
+ROFS finish, time = 116.116
+total fault: 19456
+origin vectors size: 4335
+origin fault coverage: 98.2576%
+after compress vectors size: 1997
+total_detect_num: 19117
+after compress coverage: 98.2576%
+compress ratio:2.17076
+-----------------------
+data_compress finish, time = 133.643
+
+real	2m13.760s
+user	2m13.709s
+sys	0m0.000s

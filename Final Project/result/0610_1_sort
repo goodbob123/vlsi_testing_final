@@ -1,0 +1,314 @@
+g++ -std=c++11 -g   src/atpg.cpp src/data_compress.cpp src/data_compress_sim.cpp src/display.cpp src/faultRank.cpp src/faultsim.cpp src/init_flist.cpp src/input.cpp src/level.cpp src/main.cpp src/podem.cpp src/sim.cpp src/tdfsim.cpp -lm -o ./src/atpg
+In file included from src/faultRank.cpp:1:
+src/atpg.h: In member function ‘size_t ATPG::WIRE::get_reach_id(ATPG::nptr)’:
+src/atpg.h:431:5: warning: control reaches end of non-void function [-Wreturn-type]
+  431 |     }
+      |     ^
+src/init_flist.cpp: In member function ‘void ATPG::create_dummy_gate()’:
+src/init_flist.cpp:301:31: warning: ‘%s’ directive writing up to 24 bytes into a region of size 15 [-Wformat-overflow=]
+  301 |     sprintf(sgate, "dummy_gate%s", intstring);
+      |                               ^~   ~~~~~~~~~
+src/init_flist.cpp:301:12: note: ‘sprintf’ output between 11 and 35 bytes into a destination of size 25
+  301 |     sprintf(sgate, "dummy_gate%s", intstring);
+      |     ~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/init_flist.cpp:286:31: warning: ‘%s’ directive writing up to 24 bytes into a region of size 15 [-Wformat-overflow=]
+  286 |     sprintf(sgate, "dummy_gate%s", intstring);
+      |                               ^~   ~~~~~~~~~
+src/init_flist.cpp:286:12: note: ‘sprintf’ output between 11 and 35 bytes into a destination of size 25
+  286 |     sprintf(sgate, "dummy_gate%s", intstring);
+      |     ~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/init_flist.cpp: In member function ‘char ATPG::itoc(const int&)’:
+src/init_flist.cpp:324:1: warning: control reaches end of non-void function [-Wreturn-type]
+  324 | }
+      | ^
+src/input.cpp: In member function ‘int ATPG::FindType(const string&)’:
+src/input.cpp:291:1: warning: control reaches end of non-void function [-Wreturn-type]
+  291 | }/* end of FindType */
+      | ^
+src/podem.cpp: In member function ‘ATPG::NODE* ATPG::find_propagate_gate(const int&)’:
+src/podem.cpp:606:3: warning: control reaches end of non-void function [-Wreturn-type]
+  606 |   }
+      |   ^
+src/sim.cpp: In member function ‘int ATPG::ctoi(const char&)’:
+src/sim.cpp:131:1: warning: control reaches end of non-void function [-Wreturn-type]
+  131 | }
+      | ^
+#   case: c17
+Random simulation cannot detect any fault! (140)
+total tdfault = 34
+random sim detect num = 32
+random sim finish, time = 0
+scoap finish, time = 0
+fault_ranking finish, time = 0
+podemx finish, time = 0
+-----------------------
+[ Data compress start ]
+DC_choice: 1
+sort_flag: 1
+no_improve_threshold: 5
+---- sort fault list -----
+max score: 8
+sort fault list finish, time = 0
+---- ROFS start -----
+ROFS finish, time = 0.001
+total fault: 34
+origin vectors size: 72
+origin fault coverage: 94.1176%
+after compress vectors size: 72
+total_detect_num: 32
+after compress coverage: 94.1176%
+compress ratio:1
+-----------------------
+data_compress finish, time = 0.003
+
+real	0m0.011s
+user	0m0.003s
+sys	0m0.000s
+#   case: c432
+Random simulation cannot detect any fault! (100)
+total tdfault = 1110
+random sim detect num = 0
+random sim finish, time = 0.008
+scoap finish, time = 0.008
+fault_ranking finish, time = 0.045
+podemx finish, time = 0.072
+-----------------------
+[ Data compress start ]
+DC_choice: 1
+sort_flag: 1
+no_improve_threshold: 5
+---- sort fault list -----
+max score: 63
+sort fault list finish, time = 0.028
+---- ROFS start -----
+ROFS finish, time = 0.069
+total fault: 1110
+origin vectors size: 162
+origin fault coverage: 11.6216%
+after compress vectors size: 152
+total_detect_num: 129
+after compress coverage: 11.6216%
+compress ratio:1.06579
+-----------------------
+data_compress finish, time = 0.142
+
+real	0m0.147s
+user	0m0.144s
+sys	0m0.000s
+#   case: c499
+Random simulation cannot detect any fault! (744)
+total tdfault = 2390
+random sim detect num = 2272
+random sim finish, time = 0.163
+scoap finish, time = 0.163
+fault_ranking finish, time = 0.725
+podemx finish, time = 0.726
+-----------------------
+[ Data compress start ]
+DC_choice: 1
+sort_flag: 1
+no_improve_threshold: 5
+---- sort fault list -----
+max score: 396
+sort fault list finish, time = 0.602
+---- ROFS start -----
+ROFS finish, time = 2.391
+total fault: 2390
+origin vectors size: 912
+origin fault coverage: 95.6067%
+after compress vectors size: 377
+total_detect_num: 2285
+after compress coverage: 95.6067%
+compress ratio:2.4191
+-----------------------
+data_compress finish, time = 3.117
+
+real	0m3.126s
+user	0m3.122s
+sys	0m0.000s
+#   case: c880
+Random simulation cannot detect any fault! (715)
+total tdfault = 2104
+random sim detect num = 973
+random sim finish, time = 0.173
+scoap finish, time = 0.174
+fault_ranking finish, time = 16.033
+podemx finish, time = 16.136
+-----------------------
+[ Data compress start ]
+DC_choice: 1
+sort_flag: 1
+no_improve_threshold: 5
+---- sort fault list -----
+max score: 179
+sort fault list finish, time = 0.443
+---- ROFS start -----
+ROFS finish, time = 1.876
+total fault: 2104
+origin vectors size: 1075
+origin fault coverage: 50.3802%
+after compress vectors size: 528
+total_detect_num: 1060
+after compress coverage: 50.3802%
+compress ratio:2.03598
+-----------------------
+data_compress finish, time = 18.013
+
+real	0m18.022s
+user	0m18.016s
+sys	0m0.000s
+#   case: c1355
+Random simulation cannot detect any fault! (100)
+total tdfault = 2726
+random sim detect num = 0
+random sim finish, time = 0.016
+scoap finish, time = 0.016
+fault_ranking finish, time = 1.631
+podemx finish, time = 1.776
+-----------------------
+[ Data compress start ]
+DC_choice: 1
+sort_flag: 1
+no_improve_threshold: 5
+---- sort fault list -----
+max score: 301
+sort fault list finish, time = 0.247
+---- ROFS start -----
+ROFS finish, time = 1.456
+total fault: 2726
+origin vectors size: 528
+origin fault coverage: 38.4079%
+after compress vectors size: 421
+total_detect_num: 1047
+after compress coverage: 38.4079%
+compress ratio:1.25416
+-----------------------
+data_compress finish, time = 3.233
+
+real	0m3.242s
+user	0m3.238s
+sys	0m0.000s
+#   case: c2670
+Random simulation cannot detect any fault! (877)
+total tdfault = 6520
+random sim detect num = 5185
+random sim finish, time = 0.872
+scoap finish, time = 0.873
+fault_ranking finish, time = 26.764
+podemx finish, time = 72.714
+-----------------------
+[ Data compress start ]
+DC_choice: 1
+sort_flag: 1
+no_improve_threshold: 5
+---- sort fault list -----
+max score: 911
+sort fault list finish, time = 4.441
+---- ROFS start -----
+ROFS finish, time = 24.287
+total fault: 6520
+origin vectors size: 2273
+origin fault coverage: 93.9264%
+after compress vectors size: 1124
+total_detect_num: 6124
+after compress coverage: 93.9264%
+compress ratio:2.02224
+-----------------------
+data_compress finish, time = 97.002
+
+real	1m37.043s
+user	1m37.012s
+sys	0m0.000s
+#   case: c3540
+Random simulation cannot detect any fault! (1326)
+total tdfault = 7910
+random sim detect num = 1543
+random sim finish, time = 1.372
+scoap finish, time = 1.373
+fault_ranking finish, time = 14.738
+podemx finish, time = 15.505
+-----------------------
+[ Data compress start ]
+DC_choice: 1
+sort_flag: 1
+no_improve_threshold: 5
+---- sort fault list -----
+max score: 379
+sort fault list finish, time = 2.118
+---- ROFS start -----
+ROFS finish, time = 5.613
+total fault: 7910
+origin vectors size: 1351
+origin fault coverage: 23.1732%
+after compress vectors size: 606
+total_detect_num: 1833
+after compress coverage: 23.1732%
+compress ratio:2.22937
+-----------------------
+data_compress finish, time = 21.118
+
+real	0m21.142s
+user	0m21.136s
+sys	0m0.000s
+#   case: c6288
+Random simulation cannot detect any fault! (360)
+total tdfault = 17376
+random sim detect num = 16957
+random sim finish, time = 1.426
+scoap finish, time = 1.43
+fault_ranking finish, time = 3.347
+podemx finish, time = 3.347
+-----------------------
+[ Data compress start ]
+DC_choice: 1
+sort_flag: 1
+no_improve_threshold: 5
+---- sort fault list -----
+max score: 3238
+sort fault list finish, time = 16.89
+---- ROFS start -----
+ROFS finish, time = 37.245
+total fault: 17376
+origin vectors size: 984
+origin fault coverage: 97.5886%
+after compress vectors size: 575
+total_detect_num: 16957
+after compress coverage: 97.5886%
+compress ratio:1.7113
+-----------------------
+data_compress finish, time = 40.592
+
+real	0m40.724s
+user	0m40.718s
+sys	0m0.000s
+#   case: c7552
+Random simulation cannot detect any fault! (2768)
+total tdfault = 19456
+random sim detect num = 18040
+random sim finish, time = 6.25
+scoap finish, time = 6.255
+fault_ranking finish, time = 11.608
+podemx finish, time = 18.512
+-----------------------
+[ Data compress start ]
+DC_choice: 1
+sort_flag: 1
+no_improve_threshold: 5
+---- sort fault list -----
+max score: 2398
+sort fault list finish, time = 39.287
+---- ROFS start -----
+ROFS finish, time = 137.696
+total fault: 19456
+origin vectors size: 4335
+origin fault coverage: 98.2576%
+after compress vectors size: 1999
+total_detect_num: 19117
+after compress coverage: 98.2576%
+compress ratio:2.16858
+-----------------------
+data_compress finish, time = 156.209
+
+real	2m36.339s
+user	2m36.264s
+sys	0m0.008s

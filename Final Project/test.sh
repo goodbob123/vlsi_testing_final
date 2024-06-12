@@ -1,5 +1,5 @@
 make
-ndet=1
+ndet=8
 
 time ./src/atpg -tdfatpg -compression -ndet $ndet ./sample_circuits/c17.ckt > ./podemx/c17.pat
 time ./src/atpg -tdfatpg -compression -ndet $ndet ./sample_circuits/c432.ckt > ./podemx/c432.pat
