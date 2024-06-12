@@ -231,8 +231,7 @@ class ATPG {
   //flag
   int podemx;
   int scoap;
-  bool reach_vec;
-  bool reach_cc;
+  bool use_reach;
   vector<ATPG::wptr> scoap_wlist;
 
 

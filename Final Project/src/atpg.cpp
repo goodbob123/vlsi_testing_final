@@ -244,8 +244,8 @@ void ATPG::set_parameter() {
         rank_method = 0;
         scoap = 0;
         x_limit = 100;
-        reach_cc = true;
-        reach_vec = true;
+        use_reach = true;
+        
     }
     else if((sort_wlist.size()) == 281 && (cktin.size() == 36) && (cktout.size() == 7) && (num_of_gate_fault == 1110)){
         cerr<<"#   case: c432"<<endl;
@@ -255,8 +255,8 @@ void ATPG::set_parameter() {
         rank_method = 0;
         scoap = 0;
         x_limit = 100;
-        reach_cc = true;
-        reach_vec = true;
+        use_reach = true;
+        
     }
     else if((sort_wlist.size()) == 595 && (cktin.size() == 41) && (cktout.size() == 32) && (num_of_gate_fault == 2390)){
         cerr<<"#   case: c499"<<endl;
@@ -266,8 +266,8 @@ void ATPG::set_parameter() {
         rank_method = 2;
         scoap = 1;
         x_limit = 100;
-        reach_cc = true;
-        reach_vec = true;
+        use_reach = true;
+        
     }
     else if((sort_wlist.size()) == 605 && (cktin.size() == 60) && (cktout.size() == 26) && (num_of_gate_fault == 2104)){
         cerr<<"#   case: c880"<<endl;
@@ -277,8 +277,8 @@ void ATPG::set_parameter() {
         rank_method = 2;
         scoap = 0;
         x_limit = 100;
-        reach_cc = true;
-        reach_vec = true;
+        use_reach = true;
+        
     }
     else if((sort_wlist.size()) == 595 && (cktin.size() == 41) && (cktout.size() == 32) && (num_of_gate_fault == 2726)){
         cerr<<"#   case: c1355"<<endl;
@@ -288,8 +288,8 @@ void ATPG::set_parameter() {
         rank_method = 2;
         scoap = 0;
         x_limit = 100;
-        reach_cc = true;
-        reach_vec = true;
+        use_reach = true;
+        
     }
     else if((sort_wlist.size()) == 2018 && (cktin.size() == 233) && (cktout.size() == 140) && (num_of_gate_fault == 6520)){
         cerr<<"#   case: c2670"<<endl;
@@ -299,8 +299,8 @@ void ATPG::set_parameter() {
         rank_method = 2;
         scoap = 0;
         x_limit = 100;
-        reach_cc = true;
-        reach_vec = true;
+        use_reach = true;
+        
     }
     else if((sort_wlist.size()) == 2132 && (cktin.size() == 50) && (cktout.size() == 22) && (num_of_gate_fault == 7910)){
         cerr<<"#   case: c3540"<<endl;
@@ -310,8 +310,8 @@ void ATPG::set_parameter() {
         rank_method = 2;
         scoap = 0;
         x_limit = 100;
-        reach_cc = true;
-        reach_vec = true;
+        use_reach = true;
+        
     }
     else if((sort_wlist.size()) == 4832 && (cktin.size() == 32) && (cktout.size() == 32) && (num_of_gate_fault == 17376)){
         cerr<<"#   case: c6288"<<endl;
@@ -321,8 +321,8 @@ void ATPG::set_parameter() {
         rank_method = 1;
         scoap = 0;
         x_limit = 100;
-        reach_cc = true;
-        reach_vec = true;
+        use_reach = true;
+        
     }
     else if((sort_wlist.size()) == 5886 && (cktin.size() == 207) && (cktout.size() == 108) && (num_of_gate_fault == 19456)){
         cerr<<"#   case: c7552"<<endl;
@@ -332,8 +332,8 @@ void ATPG::set_parameter() {
         rank_method = 2;
         scoap = 0;
         x_limit = 100;
-        reach_cc = true;
-        reach_vec = true;
+        use_reach = true;
+        
     }
     else{
         cerr<<"#   case: else"<<endl;
@@ -343,8 +343,8 @@ void ATPG::set_parameter() {
         rank_method = 0;
         scoap = 0;
         x_limit = 100;
-        reach_cc = true;
-        reach_vec = true;
+        use_reach = true;
+        
     }
 }
 
@@ -393,142 +393,8 @@ vector<ATPG::fptr> ATPG::second_fault(){
 }
 
 void ATPG::SCOAP() {
-    for(int i = 0; i < sort_wlist.size(); i++){
-        if(sort_wlist[i]->is_input()){
-            sort_wlist[i]->cc[0] = 1;
-            sort_wlist[i]->cc[1] = 1;
-        }
-        else{
-            ATPG::nptr n = sort_wlist[i]->inode.front();
-            int min;
-            switch (n->type) {
-                case AND:
-                    sort_wlist[i]->cc[0] = n->iwire[0]->cc[0];
-                    sort_wlist[i]->cc[1] = 0;
-                    for (int j = 0; j < n->iwire.size(); j++) {
-                        if(n->iwire[j]->cc[0] < sort_wlist[i]->cc[0])
-                            sort_wlist[i]->cc[0] = n->iwire[j]->cc[0];
-                        sort_wlist[i]->cc[1] += n->iwire[j]->cc[1];
-                    }
-                    sort_wlist[i]->cc[0]++;
-                    sort_wlist[i]->cc[1]++;
-                    break;
-                case NAND:
-                    sort_wlist[i]->cc[1] = n->iwire[0]->cc[0];
-                    sort_wlist[i]->cc[0] = 0;
-                    for (int j = 0; j < n->iwire.size(); j++) {
-                        if(n->iwire[j]->cc[0] < sort_wlist[i]->cc[1])
-                            sort_wlist[i]->cc[1] = n->iwire[j]->cc[0];
-                        sort_wlist[i]->cc[0] += n->iwire[j]->cc[1];
-                    }
-                    sort_wlist[i]->cc[0]++;
-                    sort_wlist[i]->cc[1]++;
-                    break;
-                case BUF:
-                    sort_wlist[i]->cc[0] = n->iwire[0]->cc[0] + 1;
-                    sort_wlist[i]->cc[1] = n->iwire[0]->cc[1] + 1;
-                    break;
-                case NOT:
-                    sort_wlist[i]->cc[0] = n->iwire[0]->cc[1] + 1;
-                    sort_wlist[i]->cc[1] = n->iwire[0]->cc[0] + 1;
-                    break;
-                /*  */
-                case OR:
-                    sort_wlist[i]->cc[0] = 0;
-                    sort_wlist[i]->cc[1] = n->iwire[0]->cc[1];
-                    for (int j = 0; j < n->iwire.size(); j++) {
-                        if(n->iwire[j]->cc[1] < sort_wlist[i]->cc[1])
-                            sort_wlist[i]->cc[1] = n->iwire[j]->cc[1];
-                        sort_wlist[i]->cc[0] += n->iwire[j]->cc[0];
-                    }
-                    sort_wlist[i]->cc[0]++;
-                    sort_wlist[i]->cc[1]++;
-                    break;
-                case NOR:
-                    sort_wlist[i]->cc[1] = 0;
-                    sort_wlist[i]->cc[0] = n->iwire[0]->cc[1];
-                    for (int j = 0; j < n->iwire.size(); j++) {
-                        if(n->iwire[j]->cc[1] < sort_wlist[i]->cc[0])
-                            sort_wlist[i]->cc[0] = n->iwire[j]->cc[1];
-                        sort_wlist[i]->cc[1] += n->iwire[j]->cc[0];
-                    }
-                    sort_wlist[i]->cc[0]++;
-                    sort_wlist[i]->cc[1]++;
-                    break;
-
-                case XOR:
-                    sort_wlist[i]->cc[0] = n->iwire[0]->cc[0] + n->iwire[1]->cc[0];
-                    if((n->iwire[0]->cc[1] + n->iwire[1]->cc[1]) < sort_wlist[i]->cc[0])
-                        sort_wlist[i]->cc[0] = n->iwire[0]->cc[1] + n->iwire[1]->cc[1];
-                    sort_wlist[i]->cc[1] = n->iwire[0]->cc[0] + n->iwire[1]->cc[1];
-                    if((n->iwire[0]->cc[1] + n->iwire[1]->cc[0]) < sort_wlist[i]->cc[1])
-                        sort_wlist[i]->cc[1] = n->iwire[0]->cc[1] + n->iwire[1]->cc[0];
-
-                    sort_wlist[i]->cc[0]++;
-                    sort_wlist[i]->cc[1]++;
-                    break;
-
-                case EQV:
-                    sort_wlist[i]->cc[1] = n->iwire[0]->cc[0] + n->iwire[1]->cc[0];
-                    if((n->iwire[0]->cc[1] + n->iwire[1]->cc[1]) < sort_wlist[i]->cc[1])
-                        sort_wlist[i]->cc[1] = n->iwire[0]->cc[1] + n->iwire[1]->cc[1];
-                    sort_wlist[i]->cc[0] = n->iwire[0]->cc[0] + n->iwire[1]->cc[1];
-                    if((n->iwire[0]->cc[1] + n->iwire[1]->cc[0]) < sort_wlist[i]->cc[0])
-                        sort_wlist[i]->cc[0] = n->iwire[0]->cc[1] + n->iwire[1]->cc[0];   
-                    sort_wlist[i]->cc[0]++;
-                    sort_wlist[i]->cc[1]++;
-                    break;
-            }
-        }
-    }
-
-    for(int i = sort_wlist.size()-1; i >= 0; i--){
-        if(sort_wlist[i]->is_output()){
-            sort_wlist[i]->co.push_back(0);
-            sort_wlist[i]->min_co = 0;
-        }
-        else{
-            for (int j = 0; j < sort_wlist[i]->onode.size(); j++) {
-                ATPG::nptr n = sort_wlist[i]->onode[j];
-                if(n->iwire.size() == 1){
-                    sort_wlist[i]->co.push_back(n->owire[0]->min_co + 1);
-                }
-                else{
-                    switch (n->type) {
-                        case AND:
-                        case NAND:
-                            for(int k = 0; k < n->iwire.size(); k++){
-                                if(sort_wlist[i] != n->iwire[k])
-                                    sort_wlist[i]->co.push_back(n->owire[0]->min_co + n->iwire[k]->cc[1] + 1);
-                            }
-                            break;
-                        case BUF:
-                        case NOT:
-                            sort_wlist[i]->co.push_back(n->owire[0]->min_co + 1);
-                            break;
-                        case OR:
-                        case NOR:
-                            for(int k = 0; k < n->iwire.size(); k++){
-                                if(sort_wlist[i] != n->iwire[k])
-                                    sort_wlist[i]->co.push_back(n->owire[0]->min_co + n->iwire[k]->cc[0] + 1);
-                            }
-                            break;
-                        case XOR:
-                        case EQV:
-                            for(int k = 0; k < n->iwire.size(); k++){
-                                if(sort_wlist[i] != n->iwire[k])
-                                    sort_wlist[i]->co.push_back(((n->owire[0]->min_co + n->iwire[k]->cc[0] + 1) > (n->owire[0]->min_co + n->iwire[k]->cc[1] + 1))? (n->owire[0]->min_co + n->iwire[k]->cc[1] + 1) : (n->owire[0]->min_co + n->iwire[k]->cc[0] + 1));
-                            }
-                            break;
-                    }
-                }
-            }
-            if(!sort_wlist[i]->co.empty())
-                sort_wlist[i]->min_co = *min_element(sort_wlist[i]->co.begin(), sort_wlist[i]->co.end());
-        }
-    }
-
-    if (reach_cc) {
+    if (use_reach) {
+        init_reach();
         vector<ATPG::wptr> scoap_wlist(sort_wlist);
         sort(scoap_wlist.begin(), scoap_wlist.end(), [](wptr a, wptr b) {
             return (a->_ro[0]->size() < b->_ro[0]->size()) || ((a->_ro[0]->size() == b->_ro[0]->size()) && (a->level > b->level));
@@ -548,6 +414,140 @@ void ATPG::SCOAP() {
             f->scoap = f->det->size();
         }
     } else {
+        for(int i = 0; i < sort_wlist.size(); i++){
+            if(sort_wlist[i]->is_input()){
+                sort_wlist[i]->cc[0] = 1;
+                sort_wlist[i]->cc[1] = 1;
+            }
+            else{
+                ATPG::nptr n = sort_wlist[i]->inode.front();
+                int min;
+                switch (n->type) {
+                    case AND:
+                        sort_wlist[i]->cc[0] = n->iwire[0]->cc[0];
+                        sort_wlist[i]->cc[1] = 0;
+                        for (int j = 0; j < n->iwire.size(); j++) {
+                            if(n->iwire[j]->cc[0] < sort_wlist[i]->cc[0])
+                                sort_wlist[i]->cc[0] = n->iwire[j]->cc[0];
+                            sort_wlist[i]->cc[1] += n->iwire[j]->cc[1];
+                        }
+                        sort_wlist[i]->cc[0]++;
+                        sort_wlist[i]->cc[1]++;
+                        break;
+                    case NAND:
+                        sort_wlist[i]->cc[1] = n->iwire[0]->cc[0];
+                        sort_wlist[i]->cc[0] = 0;
+                        for (int j = 0; j < n->iwire.size(); j++) {
+                            if(n->iwire[j]->cc[0] < sort_wlist[i]->cc[1])
+                                sort_wlist[i]->cc[1] = n->iwire[j]->cc[0];
+                            sort_wlist[i]->cc[0] += n->iwire[j]->cc[1];
+                        }
+                        sort_wlist[i]->cc[0]++;
+                        sort_wlist[i]->cc[1]++;
+                        break;
+                    case BUF:
+                        sort_wlist[i]->cc[0] = n->iwire[0]->cc[0] + 1;
+                        sort_wlist[i]->cc[1] = n->iwire[0]->cc[1] + 1;
+                        break;
+                    case NOT:
+                        sort_wlist[i]->cc[0] = n->iwire[0]->cc[1] + 1;
+                        sort_wlist[i]->cc[1] = n->iwire[0]->cc[0] + 1;
+                        break;
+                    /*  */
+                    case OR:
+                        sort_wlist[i]->cc[0] = 0;
+                        sort_wlist[i]->cc[1] = n->iwire[0]->cc[1];
+                        for (int j = 0; j < n->iwire.size(); j++) {
+                            if(n->iwire[j]->cc[1] < sort_wlist[i]->cc[1])
+                                sort_wlist[i]->cc[1] = n->iwire[j]->cc[1];
+                            sort_wlist[i]->cc[0] += n->iwire[j]->cc[0];
+                        }
+                        sort_wlist[i]->cc[0]++;
+                        sort_wlist[i]->cc[1]++;
+                        break;
+                    case NOR:
+                        sort_wlist[i]->cc[1] = 0;
+                        sort_wlist[i]->cc[0] = n->iwire[0]->cc[1];
+                        for (int j = 0; j < n->iwire.size(); j++) {
+                            if(n->iwire[j]->cc[1] < sort_wlist[i]->cc[0])
+                                sort_wlist[i]->cc[0] = n->iwire[j]->cc[1];
+                            sort_wlist[i]->cc[1] += n->iwire[j]->cc[0];
+                        }
+                        sort_wlist[i]->cc[0]++;
+                        sort_wlist[i]->cc[1]++;
+                        break;
+
+                    case XOR:
+                        sort_wlist[i]->cc[0] = n->iwire[0]->cc[0] + n->iwire[1]->cc[0];
+                        if((n->iwire[0]->cc[1] + n->iwire[1]->cc[1]) < sort_wlist[i]->cc[0])
+                            sort_wlist[i]->cc[0] = n->iwire[0]->cc[1] + n->iwire[1]->cc[1];
+                        sort_wlist[i]->cc[1] = n->iwire[0]->cc[0] + n->iwire[1]->cc[1];
+                        if((n->iwire[0]->cc[1] + n->iwire[1]->cc[0]) < sort_wlist[i]->cc[1])
+                            sort_wlist[i]->cc[1] = n->iwire[0]->cc[1] + n->iwire[1]->cc[0];
+
+                        sort_wlist[i]->cc[0]++;
+                        sort_wlist[i]->cc[1]++;
+                        break;
+
+                    case EQV:
+                        sort_wlist[i]->cc[1] = n->iwire[0]->cc[0] + n->iwire[1]->cc[0];
+                        if((n->iwire[0]->cc[1] + n->iwire[1]->cc[1]) < sort_wlist[i]->cc[1])
+                            sort_wlist[i]->cc[1] = n->iwire[0]->cc[1] + n->iwire[1]->cc[1];
+                        sort_wlist[i]->cc[0] = n->iwire[0]->cc[0] + n->iwire[1]->cc[1];
+                        if((n->iwire[0]->cc[1] + n->iwire[1]->cc[0]) < sort_wlist[i]->cc[0])
+                            sort_wlist[i]->cc[0] = n->iwire[0]->cc[1] + n->iwire[1]->cc[0];   
+                        sort_wlist[i]->cc[0]++;
+                        sort_wlist[i]->cc[1]++;
+                        break;
+                }
+            }
+        }
+
+        for(int i = sort_wlist.size()-1; i >= 0; i--){
+            if(sort_wlist[i]->is_output()){
+                sort_wlist[i]->co.push_back(0);
+                sort_wlist[i]->min_co = 0;
+            }
+            else{
+                for (int j = 0; j < sort_wlist[i]->onode.size(); j++) {
+                    ATPG::nptr n = sort_wlist[i]->onode[j];
+                    if(n->iwire.size() == 1){
+                        sort_wlist[i]->co.push_back(n->owire[0]->min_co + 1);
+                    }
+                    else{
+                        switch (n->type) {
+                            case AND:
+                            case NAND:
+                                for(int k = 0; k < n->iwire.size(); k++){
+                                    if(sort_wlist[i] != n->iwire[k])
+                                        sort_wlist[i]->co.push_back(n->owire[0]->min_co + n->iwire[k]->cc[1] + 1);
+                                }
+                                break;
+                            case BUF:
+                            case NOT:
+                                sort_wlist[i]->co.push_back(n->owire[0]->min_co + 1);
+                                break;
+                            case OR:
+                            case NOR:
+                                for(int k = 0; k < n->iwire.size(); k++){
+                                    if(sort_wlist[i] != n->iwire[k])
+                                        sort_wlist[i]->co.push_back(n->owire[0]->min_co + n->iwire[k]->cc[0] + 1);
+                                }
+                                break;
+                            case XOR:
+                            case EQV:
+                                for(int k = 0; k < n->iwire.size(); k++){
+                                    if(sort_wlist[i] != n->iwire[k])
+                                        sort_wlist[i]->co.push_back(((n->owire[0]->min_co + n->iwire[k]->cc[0] + 1) > (n->owire[0]->min_co + n->iwire[k]->cc[1] + 1))? (n->owire[0]->min_co + n->iwire[k]->cc[1] + 1) : (n->owire[0]->min_co + n->iwire[k]->cc[0] + 1));
+                                }
+                                break;
+                        }
+                    }
+                }
+                if(!sort_wlist[i]->co.empty())
+                    sort_wlist[i]->min_co = *min_element(sort_wlist[i]->co.begin(), sort_wlist[i]->co.end());
+            }
+        }    
         vector<ATPG::wptr> scoap_wlist(sort_wlist);
         sort(scoap_wlist.begin(), scoap_wlist.end(), [](wptr a, wptr b) {
             return (a->co < b->co) || ((a->co == b->co) && (a->level > b->level));
@@ -580,7 +580,7 @@ void ATPG::fault_ranking(){
         string vec = "";
         int temp = 0;
 
-        if (reach_vec && !sorted_flist[i]->det->is_conflict()) {
+        if (use_reach && !sorted_flist[i]->det->is_conflict()) {
             string v = "";
             rptr fr = sorted_flist[i]->det;
             for (int i = 0; i < fr->get_num_in(); i++) {

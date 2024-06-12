@@ -1,6 +1,7 @@
 #include "atpg.h"
 #include <cassert>
 void ATPG::init_reach() {
+    if (use_reach == false) return;
     size_t num_in = cktin.size();
 
     for (size_t i = 0; i < num_in; i++) {
