@@ -12,7 +12,9 @@ void ATPG::data_compress() {
     cerr << "-----------------------" << endl;
     cerr << "[ Data compress start ]" << endl;
     int DC_choice = 1;
+
     bool sort_flag = true;
+
     int no_improve_threshold = 5;
     srand(time(NULL));
     auto start = chrono::high_resolution_clock::now();
