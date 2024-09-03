@@ -12,4 +12,4 @@ all : $(OBJECTS)
 %.o:  %.c  ${INCLUDES}
 	g++ $(CFLAGS) $< -o $@
 clean:
-	rm src/*.o src/atpg	
+	rm -rf src/*.o src/atpg	sample_circuits/*.ckt.uf result/*.pat result
